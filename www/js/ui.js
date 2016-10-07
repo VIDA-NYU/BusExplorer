@@ -135,6 +135,14 @@ bus.Ui = function() {
                 // changes selected
                 else
                     __sig__.emit(__sig__.loadDataSetDone);
+
+                if(bus.pathCard != null)
+                    return;
+
+                // creates a new card
+                bus.pathCard = new bus.PathCard();
+                // creates the card
+                bus.pathCard.initCard(true);
             });
     }
 
