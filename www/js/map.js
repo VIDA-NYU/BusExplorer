@@ -11,6 +11,8 @@ bus.Map = function(){
 
     // exported api
     var exports = {};
+    exports.paths = undefined;
+    exports.highlightedPaths = undefined;
 
     // create a new bus layer
     function createNewBus(render){
@@ -96,8 +98,38 @@ bus.Map = function(){
         thr.draw();
     };
 
+    exports.clickedFeature = function(e,feature,layer) {
+        console.log(e);
+        console.log(feature);
+        console.log(layer);
+    };
+
+    exports.onEachFeature = function(feature, layer) {
+        // var that = this;
+        layer.on({
+            click: function(e) {
+                bus.map.clickedFeature(e,feature,layer);
+
+                // remove selected feature
+                bus.map.paths.removeLayer(layer);
+
+                // add new feature to highlighted selection
+                bus.map.highlightedPaths.addData(feature);
+            }
+        });
+    };
+
     exports.addGeoJson = function(geojson){
-        L.geoJSON(geojson).addTo(map);
+        var style = {
+            "color": "#ff0000",
+        };
+        bus.map.highlightedPaths = L.geoJSON(false, {
+            style: style
+        }).addTo(map);
+
+        bus.map.paths = L.geoJSON(geojson, {
+            onEachFeature: bus.map.onEachFeature
+        }).addTo(map);
     };
 
     // map creation
