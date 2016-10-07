@@ -111,10 +111,40 @@ bus.Map = function(){
                 bus.map.clickedFeature(e,feature,layer);
 
                 // remove selected feature
-                bus.map.paths.removeLayer(layer);
+                // bus.map.paths.removeLayer(layer);
+
+                var newFeature = {};
+                newFeature.type = "Feature";
+                newFeature.geometry = {}
+                newFeature.geometry.type = "LineString";
+                newFeature.geometry.coordinates = null;
+                // iterate through all coordinates of features.geometry 
+                // until we find the one LineString that we clicked
+                var minDistance = Infinity;
+                var minOffset = 0;
+                var numLines = feature.geometry.coordinates.length;
+                var lines    = feature.geometry.coordinates;
+                for(var i=0; i<numLines; i++) {
+                    var numCoords = feature.geometry.coordinates[i].length;
+                    for(var j=0; j<numCoords; j++) {
+                        if(j < numCoords - 2) {
+                            var coords = feature.geometry.coordinates[i];
+                            var distance = L.LineUtil.pointToSegmentDistance( 
+                                    map.project(e.latlng),
+                                    map.project(L.latLng(coords[j][1],coords[j][0])),
+                                    map.project(L.latLng(coords[j+1][1],coords[j+1][0])) 
+                                    );
+                            if(distance < minDistance) {
+                                minDistance = distance;
+                                minOffset = i;
+                            }
+                        }
+                    }
+                }
+                newFeature.geometry.coordinates = feature.geometry.coordinates[minOffset];
 
                 // add new feature to highlighted selection
-                bus.map.highlightedPaths.addData(feature);
+                bus.map.highlightedPaths.addData(newFeature);
             }
         });
     };
