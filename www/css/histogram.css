@@ -1,0 +1,22 @@
+/*
+# Urbane 2015.
+# Pluto data viewer
+*/
+
+.axis line, .axis path {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+rect {
+    stroke:#2E6DA4;
+}
+
+.bar {
+    fill: #337AB7;
+}
+
+.y.axis g {
+    display:none;
+}
