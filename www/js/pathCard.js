@@ -36,6 +36,14 @@ bus.PathCard = function(){
             .classed("bgStyle export",true);
     }
 
+    function download(text, name, type) {
+        var a = document.createElement("a");
+        var file = new Blob([text], {type: type});
+        a.href = URL.createObjectURL(file);
+        a.download = name;
+        a.click();
+    }
+
     // selects the property
     function pathSelector(propId){
         var buttonId = "pathSelector";
@@ -47,7 +55,8 @@ bus.PathCard = function(){
 
         // add callback
         btn.on("click", function(){
-            alert("Callback pingSelector");
+            var geojson = bus.map.highlightedPaths.toGeoJSON();
+            download(JSON.stringify(geojson), 'geo.json', 'text/plain');
         });
     }
 
