@@ -13,6 +13,7 @@ bus.Map = function(){
     var exports = {};
     exports.paths = undefined;
     exports.highlightedPaths = undefined;
+    exports.selectedLine = undefined;
 
     // create a new bus layer
     function createNewBus(render){
@@ -99,9 +100,17 @@ bus.Map = function(){
     };
 
     exports.clickedFeature = function(e,feature,layer) {
-        console.log(e);
-        console.log(feature);
-        console.log(layer);
+        // console.log(e);
+        // console.log(feature);
+        // console.log(layer);
+    };
+
+    exports.filterByLine = function(feature, layer) {
+        if(feature.properties.Route === bus.map.selectedLine) {
+            return true;
+        }
+        
+        return false;
     };
 
     exports.onEachFeature = function(feature, layer) {
@@ -128,7 +137,6 @@ bus.Map = function(){
 
                     var coords = feature.geometry.coordinates;
                     var numCoords = coords.length;
-                    console.log(coords);
                     for(var j=0; j<numCoords-1; j++) {
                         var distance = L.LineUtil.pointToSegmentDistance( map.project(e.latlng),map.project(L.latLng(coords[j][1],coords[j][0])),map.project(L.latLng(coords[j+1][1],coords[j+1][0])) );
                         if(distance < minDistance) {
@@ -148,7 +156,6 @@ bus.Map = function(){
                     for(var i=0; i<numLines; i++) {
                         var coords = lines[i];
                         var numCoords = lines[i].length;
-                        console.log(coords);
                         for(var j=0; j<numCoords-1; j++) {
                             var distance = L.LineUtil.pointToSegmentDistance( map.project(e.latlng),map.project(L.latLng(coords[j][1],coords[j][0])),map.project(L.latLng(coords[j+1][1],coords[j+1][0])) );
                             if(distance < minDistance) {
@@ -177,7 +184,23 @@ bus.Map = function(){
         }).addTo(map);
 
         bus.map.paths = L.geoJSON(geojson, {
-            onEachFeature: bus.map.onEachFeature
+            onEachFeature: bus.map.onEachFeature,
+            // filter: bus.map.filterByLine
+        }).addTo(map);
+    };
+
+    exports.addLine = function(lineName){
+        bus.map.selectedLine = lineName;
+
+        var style = {
+            "color": "#ff0000",
+        };
+        bus.map.highlightedPaths = L.geoJSON(false, {
+            style: style
+        }).addTo(map);
+
+        bus.map.paths = L.geoJSON(geojson, {
+            filter: bus.map.filterByLine
         }).addTo(map);
     };
 

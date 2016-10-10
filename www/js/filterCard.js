@@ -139,7 +139,7 @@ bus.FilterCard = function(){
 
         // adds the drop down
         var dropClass = propId==0?"":"leftSpace";
-        var line = bus.UiParts.SimpleText(cardDiv,dropId,dropClass,"Lines: ");
+        var line = bus.UiParts.SimpleText(cardDiv,dropId,dropClass,"Filter by line name: ");
         var linePicker = bus.UiParts.LineFilter(cardDiv,"lines");
         cardDiv.append("br");
 
@@ -155,7 +155,7 @@ bus.FilterCard = function(){
                     $('#linesInput').typeahead({
                         source:json,
                         updater: function(item) {
-                             $('#linesArea').append('"'+item+'"', ',');
+                            $('#linesArea').append('"'+item+'"', ',');
                             return '';
                         }
                     });
@@ -167,6 +167,36 @@ bus.FilterCard = function(){
                     $(function () {
                         $('[data-toggle="tooltip"]').tooltip();
                     })
+                });
+            });
+    }
+
+    function linePathSelector(propId){
+        var dropId = "lineSelector";
+
+        // adds the drop down
+        var dropClass = propId==0?"":"leftSpace";
+        var line = bus.UiParts.SimpleText(cardDiv,dropId,dropClass,"Filter by line trajectory: ");
+        var linePicker = bus.UiParts.LineFilter(cardDiv,"lines");
+        cardDiv.append("br");
+
+        $.getJSON("/json/routes.json", function(json) {
+                d3.select(".searchBusLine")
+                    .selectAll("option").data(json)
+                    .enter().append("option")
+                    .attr("value", function (d) { return d; } )
+                    .html(function (d) { return d; } );
+                $(document).ready(function(){
+                    $('.typeahead').typeahead();
+                    $('.typeahead').typeahead('destroy');
+                    $('#linesInput').typeahead({
+                        source:json,
+                        updater: function(item) {
+                            $('#linesArea').append('"'+item+'"', ',');
+                            bus.map.addLine(item);
+                            return '';
+                        }
+                    });
                 });
             });
     }
@@ -188,6 +218,7 @@ bus.FilterCard = function(){
         yearSelector(0);
         hourSelector(0);
         lineSelector(0);
+        linePathSelector(0);
 
         
    };
