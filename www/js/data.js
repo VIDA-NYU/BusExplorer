@@ -52,7 +52,9 @@ bus.Data = function (){
             // parses json
             var jsonData = JSON.parse(json);
             // store the json
-            bus.availableBusNames         = jsonData.lines;
+            bus.availableLionNames        = jsonData.lion;
+            bus.availableRouteNames       = jsonData.routes;
+            bus.availableLineNames        = jsonData.lines;
             bus.availableFunctionNames[0] = jsonData.functionLinear;
             bus.availableFunctionNames[1] = jsonData.functionOrdinal;
 
@@ -62,27 +64,42 @@ bus.Data = function (){
     };
 
     // load a bus json
-    exports.loadDataSetFile = function(render) {
-        // default value
-        render = typeof render !== 'undefined' ? render : true;
-        // data set name
-        var dataName = render?bus.selectedBusName:bus.selectedBusCompareName;
+    exports.loadDataSetFile = function() {
 
-        $.getJSON("/json/"+dataName+".geojson", function(json) {
-            bus.map.addGeoJson(json);
+        if(bus.selectedLionName !== "") {
+            $.getJSON("/json/"+bus.selectedLionName+".geojson", function(json) {
+                bus.map.addGeoJson(json);
+                bus.selectedLionName = "";
+            });
+        }
+        else if(bus.selectedLineName !== "") {
+            if(bus.selectedLineName.substring(0,1) === "B") {
+                $.getJSON("/json/buses_brooklyn.geojson", function(json) {
+                    bus.map.addLine(json);
+                    bus.selectedLineName = "";
+                });
+            }
+            else if(bus.selectedLineName.substring(0,2) === "Bx") {
+                $.getJSON("/json/buses_bronx.geojson", function(json) {
+                    bus.map.addLine(json);
+                    bus.selectedLineName = "";
+                });
+            }
+            else if(bus.selectedLineName.substring(0,1) === "M") {
+                $.getJSON("/json/buses_manhattan.geojson", function(json) {
+                    bus.map.addLine(json);
+                    bus.selectedLineName = "";
+                });
+            }
+            else if(bus.selectedLineName.substring(0,1) === "S") {
+                $.getJSON("/json/buses_staten.geojson", function(json) {
+                    bus.map.addLine(json);
+                    bus.selectedLineName = "";
+                });
+            }
+        }
 
-            // parses json
-            // var jsonData = GeoJSON.parse(json);
-
-            // stores the crossfilter
-            // bus.loadedDataSet[dataName] = crossfilter(json);
-
-            // emmit signal
-            // if(render)
-            //     __sig__.emit(__sig__.loadDataSetDone);
-            // else
-            //     __sig__.emit(__sig__.loadDataSetDoneNoRender)
-        });
+        
     };
 
     return exports;

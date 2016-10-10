@@ -106,9 +106,10 @@ bus.Map = function(){
     };
 
     exports.filterByLine = function(feature, layer) {
-        if(feature.properties.Route === bus.map.selectedLine) {
+        if(bus.selectedLineName === "")
+            return true
+        if(feature.properties.Route === bus.selectedLineName)
             return true;
-        }
         
         return false;
     };
@@ -185,22 +186,18 @@ bus.Map = function(){
 
         bus.map.paths = L.geoJSON(geojson, {
             onEachFeature: bus.map.onEachFeature,
-            // filter: bus.map.filterByLine
+            style: style
         }).addTo(map);
     };
 
-    exports.addLine = function(lineName){
-        bus.map.selectedLine = lineName;
-
+    exports.addLine = function(geojson){
         var style = {
             "color": "#ff0000",
         };
-        bus.map.highlightedPaths = L.geoJSON(false, {
-            style: style
-        }).addTo(map);
 
-        bus.map.paths = L.geoJSON(geojson, {
-            filter: bus.map.filterByLine
+        bus.map.highlightedPaths = L.geoJSON(geojson, {
+            filter: bus.map.filterByLine,
+            style: style
         }).addTo(map);
     };
 

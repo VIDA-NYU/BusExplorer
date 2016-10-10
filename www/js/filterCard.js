@@ -143,62 +143,51 @@ bus.FilterCard = function(){
         var linePicker = bus.UiParts.LineFilter(cardDiv,"lines");
         cardDiv.append("br");
 
-        $.getJSON("/json/routes.json", function(json) {
-                d3.select(".searchBusLine")
-                    .selectAll("option").data(json)
-                    .enter().append("option")
-                    .attr("value", function (d) { return d; } )
-                    .html(function (d) { return d; } );
-                $(document).ready(function(){
-                    $('.typeahead').typeahead();
-                    $('.typeahead').typeahead('destroy');
-                    $('#linesInput').typeahead({
-                        source:json,
-                        updater: function(item) {
-                            $('#linesArea').append('"'+item+'"', ',');
-                            return '';
-                        }
-                    });
-                    $('#linesForm').submit(function(event){
-                        event.preventDefault();
-                        busLine = $('.searchBusLine').val();
-                        busvis.loadProfile(busLine);
-                    });
-                    $(function () {
-                        $('[data-toggle="tooltip"]').tooltip();
-                    })
-                });
+        d3.select(".searchBusLine")
+            .selectAll("option").data(bus.availableLineNames)
+            .enter().append("option")
+            .attr("value", function (d) { return d; } )
+            .html(function (d) { return d; } );
+        $(document).ready(function(){
+            $('.typeahead').typeahead();
+            $('.typeahead').typeahead('destroy');
+            $('#linesInput').typeahead({
+                source:bus.availableLineNames,
+                updater: function(item) {
+                    $('#linesArea').append('"'+item+'"', ',');
+                    bus.map.addLine(item);
+                    return '';
+                }
             });
+        });
     }
 
-    function linePathSelector(propId){
-        var dropId = "lineSelector";
+    function pathSelector(propId){
+        var dropId = "pathSelector";
 
         // adds the drop down
         var dropClass = propId==0?"":"leftSpace";
         var line = bus.UiParts.SimpleText(cardDiv,dropId,dropClass,"Filter by line trajectory: ");
-        var linePicker = bus.UiParts.LineFilter(cardDiv,"lines");
+
+        cardDiv.append("input")
+            .attr("type", "file")
+            .attr("id", "fileInput");
+
+        $("#fileInput").filestyle({badge: false, buttonName: "btn-primary"});
         cardDiv.append("br");
 
-        $.getJSON("/json/routes.json", function(json) {
-                d3.select(".searchBusLine")
-                    .selectAll("option").data(json)
-                    .enter().append("option")
-                    .attr("value", function (d) { return d; } )
-                    .html(function (d) { return d; } );
-                $(document).ready(function(){
-                    $('.typeahead').typeahead();
-                    $('.typeahead').typeahead('destroy');
-                    $('#linesInput').typeahead({
-                        source:json,
-                        updater: function(item) {
-                            $('#linesArea').append('"'+item+'"', ',');
-                            bus.map.addLine(item);
-                            return '';
-                        }
-                    });
-                });
-            });
+        $("#fileInput").change(function() {
+            var reader = new FileReader();
+            reader.readAsText(this.files[0]);
+            reader.onload = function() {
+                bus.map.addGeoJson(JSON.parse(reader.result));
+            }
+        })
+
+        // add callback
+        // btn.on("click", function(){
+        //     upload();
+        // });
     }
 
     exports.closeCard = function(){
@@ -218,7 +207,7 @@ bus.FilterCard = function(){
         yearSelector(0);
         hourSelector(0);
         lineSelector(0);
-        linePathSelector(0);
+        pathSelector(0);
 
         
    };

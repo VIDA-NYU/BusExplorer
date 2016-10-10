@@ -104,9 +104,9 @@ bus.Ui = function() {
         });
     }
 
-    // creates the bus Selector
-    function busSelector(parentDiv){
-        var dropId = "busSelector";
+    // creates the path Selector
+    function pathSelector(parentDiv){
+        var dropId = "pathSelector";
 
         // adds the drop down
         var drop = bus.UiParts.DropDown(parentDiv,dropId,"leftSpace");
@@ -114,11 +114,11 @@ bus.Ui = function() {
         // gets the list
         var ul = drop.select("ul");
         // sets the button label
-        drop.select("button").html("Select one geojson");
+        drop.select("button").html("LION layer");
 
         // binds json to items and appends
         ul.selectAll("li")
-            .data(bus.availableBusNames)
+            .data(bus.availableLionNames)
             .enter()
             .append('li')
             .html(function(d) { return '<a href="#">' + d + '</a>'; });
@@ -126,8 +126,8 @@ bus.Ui = function() {
         // updates the button when selecting an item
         ul.selectAll("li")
             .on('click', function(d){
-                d3.select('#'+ dropId +' button').html(d);
-                bus.selectedBusName = d;
+                // d3.select('#'+ dropId +' button').html(d);
+                bus.selectedLionName = d;
 
                 // already loaded
                 if( !(bus.selectedBusName in bus.loadedBus) )
@@ -146,9 +146,9 @@ bus.Ui = function() {
             });
     }
 
-    // creates the bus Selector
-    function busSelectorCompare(parentDiv){
-        var dropId = "busSelectorCompare";
+    // creates the path Selector
+    function lineSelector(parentDiv){
+        var dropId = "lineSelector";
 
         // adds the drop down
         var drop = bus.UiParts.DropDown(parentDiv,dropId,"leftSpace");
@@ -156,11 +156,11 @@ bus.Ui = function() {
         // gets the list
         var ul = drop.select("ul");
         // sets the button label
-        drop.select("button").html("Select one geojson");
+        drop.select("button").html("Bus lines layer");
 
         // binds json to items and appends
         ul.selectAll("li")
-            .data(bus.availableBusNames)
+            .data(bus.availableLineNames)
             .enter()
             .append('li')
             .html(function(d) { return '<a href="#">' + d + '</a>'; });
@@ -168,15 +168,22 @@ bus.Ui = function() {
         // updates the button when selecting an item
         ul.selectAll("li")
             .on('click', function(d){
-                d3.select('#'+ dropId +' button').html(d);
-                bus.selectedBusCompareName = d;
+                bus.selectedLineName = d;
 
                 // already loaded
-                if( !(bus.selectedBusCompareName in bus.loadedBus) )
-                    __sig__.emit(__sig__.loadDataSet, false);
+                if( !(bus.selectedBusName in bus.loadedBus) )
+                    __sig__.emit(__sig__.loadDataSet);
                 // changes selected
                 else
-                    __sig__.emit(__sig__.loadDataSetDoneNoRender);
+                    __sig__.emit(__sig__.loadDataSetDone);
+
+                if(bus.pathCard != null)
+                    return;
+
+                // creates a new card
+                bus.pathCard = new bus.PathCard();
+                // creates the card
+                bus.pathCard.initCard(true);
             });
     }
 
@@ -240,7 +247,8 @@ bus.Ui = function() {
         // creates the add filter button
         addExportCard(mainMenu);
         // creates the bus selector
-        busSelector(mainMenu);
+        pathSelector(mainMenu);
+        lineSelector(mainMenu);
         // creates the bus selector
         // busSelectorCompare(mainMenu);
     }

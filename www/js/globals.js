@@ -9,14 +9,17 @@ bus = {};
 
 
 // available bus json sets
-bus.availableBusNames = [];
+bus.availableLionNames  = [];
+bus.availableRouteNames = [];
+bus.availableLineNames  = [];
 
 // available bus properties
 bus.availableFunctionNames = [undefined,undefined];
 
 
-// currently selected Pluto dataset
-bus.selectedBusName = "";
+// currently selected bus dataset
+bus.selectedLionName = "";
+bus.selectedLineName = "";
 
 // currently selected function view
 bus.selectedFunctionName = "yearbuilt";

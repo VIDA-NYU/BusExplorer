@@ -49,7 +49,6 @@ bus.PathCard = function(){
         var buttonId = "pathSelector";
 
         var dropClass = propId==0?"":"leftSpace";
-        var text = bus.UiParts.SimpleText(cardDiv,buttonId, dropClass, "Select a path on the map");
         var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Save as geojson");
         cardDiv.append("br");
 

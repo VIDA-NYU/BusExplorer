@@ -24,6 +24,7 @@ html, body, #gmaps {
 
 #mainMenu{
     position: fixed;
+    width: 400px;
     top: 5px;
     left:5px;
     z-index: 10;
@@ -68,7 +69,13 @@ html, body, #gmaps {
     margin-left: 5px;
 }
 
-#busSelector, #busSelectorCompare,#renderFunctionSelector, #propSelector, #cscale{
+.scrollable-menu {
+    height: auto;
+    max-height: 600px;
+    overflow-x: hidden;
+}
+
+#pathSelector, #lineSelector, #busSelectorCompare,#renderFunctionSelector, #propSelector, #cscale{
     display: inline-block;
     vertical-align: middle;
 }

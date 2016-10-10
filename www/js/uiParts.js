@@ -64,7 +64,7 @@ bus.UiParts.DropDown = function(parentDiv, dropId, dropClass){
 
     // creates the list
     dropDiv.append("ul")
-        .classed("dropdown-menu", true);
+        .classed("dropdown-menu scrollable-menu", true);
 
     // returns the element
     return dropDiv;
