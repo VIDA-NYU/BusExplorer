@@ -37,6 +37,10 @@ html, body, #gmaps {
     z-index: 10;
 }
 
+.export {
+    width: 175px;
+}
+
 
 #cards{
     position: fixed;

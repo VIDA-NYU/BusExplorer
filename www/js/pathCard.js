@@ -50,7 +50,7 @@ bus.PathCard = function(){
 
         var dropClass = propId==0?"":"leftSpace";
         var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Save as geojson");
-        cardDiv.append("br");
+        // cardDiv.append("br");
 
         // add callback
         btn.on("click", function(){
@@ -63,6 +63,19 @@ bus.PathCard = function(){
         if(cardDiv) cardDiv.remove();
     }
 
+    function closeCardButton(){
+        var buttonId = "closeCard";
+
+        // adds the button
+        var btn = bus.UiParts.Button(cardDiv, buttonId, "glyphicon glyphicon-remove");
+        // add callback
+        btn.on("click", function(){
+            bus.map.clearPaths();
+            // remove the card
+            if(cardDiv) cardDiv.remove();
+        });
+    }
+
     // card creation
     exports.initCard = function(){
         // gets the cards div
@@ -72,6 +85,9 @@ bus.PathCard = function(){
 
         // card menu
         pathSelector(0);
+
+        // close card
+        closeCardButton();
 
         
    };
