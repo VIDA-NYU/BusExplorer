@@ -43,6 +43,7 @@ bus.loadedIndex = {};
 bus.loadedDataSet = {};
 
 bus.map = null;
+bus.db = null;
 
 //TODO: Remove?
 // number of created cards

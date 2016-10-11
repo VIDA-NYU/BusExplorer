@@ -42,7 +42,7 @@ bus.FilterCard = function(){
 
         // adds the drop down
         var dropClass = propId==0?"":"leftSpace";
-        var day = bus.UiParts.SimpleText(cardDiv,dropId,dropClass,"Day of week: ");
+        var day = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Day of week: ");
         var dayDrop = bus.UiParts.DropDown(cardDiv,dropId,dropClass);
         cardDiv.append("br");
 
@@ -53,7 +53,7 @@ bus.FilterCard = function(){
 
         // binds json to items and appends
         ul.selectAll("li")
-            .data(["All","Monday","Tuesday","Wednsday","Thursday","Friday","Saturday","Sunday"])
+            .data(["All","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"])
             .enter()
             .append('li')
             .html(function(d) { return '<a href="#">' + d + '</a>'; });
@@ -71,7 +71,7 @@ bus.FilterCard = function(){
 
         // adds the drop down
         var dropClass = propId==0?"":"leftSpace";
-        var month = bus.UiParts.SimpleText(cardDiv,dropId,dropClass,"Month: ");
+        var month = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Month: ");
         var monthDrop = bus.UiParts.DropDown(cardDiv,dropId,dropClass);
         cardDiv.append("br");
 
@@ -100,7 +100,7 @@ bus.FilterCard = function(){
 
         // adds the drop down
         var dropClass = propId==0?"":"leftSpace";
-        var year = bus.UiParts.SimpleText(cardDiv,dropId,dropClass,"Year: ");
+        var year = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Year: ");
         var yearDrop = bus.UiParts.DropDown(cardDiv,dropId,dropClass);
         cardDiv.append("br");
 
@@ -129,7 +129,7 @@ bus.FilterCard = function(){
 
         // adds the drop down
         var dropClass = propId==0?"":"leftSpace";
-        var start = bus.UiParts.SimpleText(cardDiv,dropId,dropClass,"Hours: ");
+        var start = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Hours: ");
         var startPicker = bus.UiParts.Slider(cardDiv,"picker");
         cardDiv.append("br");
     }
@@ -139,7 +139,7 @@ bus.FilterCard = function(){
 
         // adds the drop down
         var dropClass = propId==0?"":"leftSpace";
-        var line = bus.UiParts.SimpleText(cardDiv,dropId,dropClass,"Filter by bus id: ");
+        var line = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Filter by bus id: ");
         var linePicker = bus.UiParts.InputFilter(cardDiv,"ids");
         cardDiv.append("br");
     }
@@ -149,11 +149,11 @@ bus.FilterCard = function(){
 
         // adds the drop down
         var dropClass = propId==0?"":"leftSpace";
-        var line = bus.UiParts.SimpleText(cardDiv,dropId,dropClass,"Filter by line name: ");
+        var line = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Filter by line name: ");
         var linePicker = bus.UiParts.LineFilter(cardDiv,"lines");
         cardDiv.append("br");
 
-        d3.select(".searchBusLine")
+        d3.select("#linesInput")
             .selectAll("option").data(bus.availableLineNames)
             .enter().append("option")
             .attr("value", function (d) { return d; } )
@@ -164,8 +164,8 @@ bus.FilterCard = function(){
             $('#linesInput').typeahead({
                 source:bus.availableLineNames,
                 updater: function(item) {
-                    $('#linesArea').append('"'+item+'"', ',');
-                    bus.map.addLine(item);
+                    $('#linesArea').append(item+', ');
+                    // bus.map.addLine(item);
                     return '';
                 }
             });
@@ -177,7 +177,7 @@ bus.FilterCard = function(){
 
         // adds the drop down
         var dropClass = propId==0?"":"leftSpace";
-        var line = bus.UiParts.SimpleText(cardDiv,dropId,dropClass,"Filter by line trajectory: ");
+        var line = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Filter by line trajectory: ");
 
         cardDiv.append("input")
             .attr("type", "file")
@@ -245,8 +245,59 @@ bus.FilterCard = function(){
         pingSelector(0);
         aggregationSelector(1);
 
-        
-   };
+    };
+
+    exports.getDayOfWeek = function(){
+        var val = $("#daySelector").children("button").text();
+        switch(val) {
+            case "All":
+                return -1;
+            case "Monday":
+                return 0;
+            case "Tuesday":
+                return 1;
+            case "Wednesday":
+                return 2;
+            case "Thursday":
+                return 3;
+            case "Friday":
+                return 4;
+            case "Saturday":
+                return 5;
+            case "Sunday":
+                return 6;
+        }
+        return -1;
+    };
+
+    exports.getMonth = function(){
+        return $("#monthSelector").children("button").text();
+    };
+
+    exports.getYear = function(){
+        return $("#yearSelector").children("button").text();
+    };
+
+    exports.getStartHour = function(){
+        return $("#picker").attr("value").split(",")[0];
+    };
+
+    exports.getEndHour = function(){
+        return $("#picker").attr("value").split(",")[1];
+    };
+
+    exports.getIds = function(){
+        return $("#idsInput").val();
+    };
+
+    exports.getLines = function(){
+        return $("#linesArea").val();
+    };
+
+    exports.getPath = function(){
+
+    };
+
 
     // public api
     return exports;

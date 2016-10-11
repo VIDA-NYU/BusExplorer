@@ -11,6 +11,8 @@ bus.Main = function() {
     var dat = new bus.Data();
     // ui factory
     var gui = new bus.Ui();
+    // db 
+    bus.db = new bus.Db();
 
     // exported api
     var exports = {};

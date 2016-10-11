@@ -98,8 +98,6 @@ bus.Data = function (){
                 });
             }
         }
-
-        
     };
 
     return exports;
