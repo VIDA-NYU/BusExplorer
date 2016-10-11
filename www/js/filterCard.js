@@ -200,6 +200,29 @@ bus.FilterCard = function(){
         // });
     }
 
+    // selects the property
+    function pingSelector(propId){
+        var buttonId = "pingSelector";
+
+        var dropClass = propId==0?"":"leftSpace";
+        var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export pings", dropClass);
+        // add callback
+        btn.on("click", function(){
+            alert("Callback pingSelector");
+        });
+    }
+
+    function aggregationSelector(propId){
+        var buttonId = "pingSelector";
+
+        var dropClass = propId==0?"":"leftSpace";
+        var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export trips", dropClass);
+        // add callback
+        btn.on("click", function(){
+            alert("Callback aggregationSelector");
+        });
+    }
+
     exports.closeCard = function(){
         if(cardDiv) cardDiv.remove();
     }
@@ -219,6 +242,8 @@ bus.FilterCard = function(){
         idSelector(0);
         lineSelector(0);
         pathSelector(0);
+        pingSelector(0);
+        aggregationSelector(1);
 
         
    };
