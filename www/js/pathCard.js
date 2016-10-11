@@ -52,7 +52,7 @@ bus.PathCard = function(){
         }
         else
         {
-          window.open('data:text/plain;charset=utf-8,' + escape(data));                      
+          window.open('data:text/csv;charset=utf-8,' + escape(text));                      
         } 
     }
 
