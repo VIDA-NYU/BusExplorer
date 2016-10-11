@@ -134,6 +134,16 @@ bus.FilterCard = function(){
         cardDiv.append("br");
     }
 
+    function idSelector(propId){
+        var dropId = "idSelector";
+
+        // adds the drop down
+        var dropClass = propId==0?"":"leftSpace";
+        var line = bus.UiParts.SimpleText(cardDiv,dropId,dropClass,"Filter by bus id: ");
+        var linePicker = bus.UiParts.InputFilter(cardDiv,"ids");
+        cardDiv.append("br");
+    }
+
     function lineSelector(propId){
         var dropId = "lineSelector";
 
@@ -206,6 +216,7 @@ bus.FilterCard = function(){
         monthSelector(0);
         yearSelector(0);
         hourSelector(0);
+        idSelector(0);
         lineSelector(0);
         pathSelector(0);
 

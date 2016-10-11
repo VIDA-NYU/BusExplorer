@@ -110,10 +110,18 @@ bus.UiParts.Slider = function(parentDiv, pickerId){
     return div;
 };
 
-bus.UiParts.LineFilter = function(parentDiv, filterId){
+bus.UiParts.InputFilter = function(parentDiv, filterId){
 
-    // <input type="text" id="searchInput" class="form-control searchBusLine" placeholder="" data-provide="typeahead"><br></br>
-            // <textarea id="searchArea" class="form-control searchBusLine" cols="20" rows="3"></textarea>
+    var div = parentDiv.append("input")
+        .attr("id",filterId+"Input")
+        .attr("type", "text")
+        .attr("class", "form-control searchBusLine")
+        .attr("data-provider", "typeahead");
+
+    return div;
+};
+
+bus.UiParts.LineFilter = function(parentDiv, filterId){
 
     var div = parentDiv.append("input")
         .attr("id",filterId+"Input")
