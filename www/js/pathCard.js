@@ -36,12 +36,24 @@ bus.PathCard = function(){
             .classed("bgStyle export",true);
     }
 
+    // function download(text, name, type) {
+    //     var a = document.createElement("a");
+    //     var file = new Blob([text], {type: type});
+    //     a.href = URL.createObjectURL(file);
+    //     a.download = name;
+    //     a.click();
+    // }
+
     function download(text, name, type) {
-        var a = document.createElement("a");
-        var file = new Blob([text], {type: type});
-        a.href = URL.createObjectURL(file);
-        a.download = name;
-        a.click();
+        if (navigator.msSaveBlob)
+        {
+          var blob = new Blob([text],{type: type});
+          navigator.msSaveBlob(blob, name)
+        }
+        else
+        {
+          window.open('data:text/plain;charset=utf-8,' + escape(data));                      
+        } 
     }
 
     // selects the property
