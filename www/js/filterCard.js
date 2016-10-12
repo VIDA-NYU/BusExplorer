@@ -190,7 +190,11 @@ bus.FilterCard = function(){
             var reader = new FileReader();
             reader.readAsText(this.files[0]);
             reader.onload = function() {
-                bus.map.addGeoJson(JSON.parse(reader.result));
+                var style = {
+                    "weight": 4,
+                    "opacity": 0.8
+                }
+                bus.map.addGeoJson(JSON.parse(reader.result), "filter", style);
             }
         })
 

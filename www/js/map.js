@@ -169,8 +169,6 @@ bus.Map = function(){
                     newFeature.geometry.coordinates = [feature.geometry.coordinates[indexi][indexj], feature.geometry.coordinates[indexi][indexj+1]];
                 }                
                 
-                console.log(feature);
-
                 // add new feature to highlighted selection
                 var style = {
                     "color": "#ff0000",
@@ -178,17 +176,28 @@ bus.Map = function(){
                 var aux = L.geoJSON(newFeature, {
                     style: style
                 }).addTo(map);
-                bus.map.highlightedPaths[feature.properties.LINEARID] = aux;
+                var key = Object.keys(bus.map.highlightedPaths).length;
+                bus.map.highlightedPaths[key] = aux;
             }
         });
     };
 
-    exports.addGeoJson = function(geojson, name){
+    exports.addGeoJson = function(geojson, name, style){
+        
+        if(style == undefined) {
+            style = {
+                "weight": 8,
+                "opacity": 0.2
+            };
+        }
+
         var geo = L.geoJSON(geojson, {
-            onEachFeature: bus.map.onEachFeature
+            onEachFeature: bus.map.onEachFeature,
+            style: style
         }).addTo(map);
         geo.bringToBack();
         bus.map.paths[name] = geo;
+        console.log(geojson);
     };
 
     exports.removeGeoJSON = function(name){

@@ -70,7 +70,7 @@ bus.PathCard = function(){
             var geojson = bus.map.getHighlightedPath();
             var buffered = calculateBuffer(geojson);
             download(JSON.stringify(buffered), 'geo.json', 'text/plain');
-            // download(JSON.stringify(geojson), 'geo.json', 'text/plain');
+            download(JSON.stringify(geojson), 'geo.json', 'text/plain');
         });
     }
 
