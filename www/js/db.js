@@ -12,7 +12,8 @@ bus.Db = function (){
 
     };
 
-    exports.getPings = function(){
+    exports.getPings = function(callAfter){
+        
     	$.post('/getPings',
             {dayOfWeek:bus.filterCard.getDayOfWeek(),
              month:bus.filterCard.getMonth(),
@@ -25,11 +26,12 @@ bus.Db = function (){
             }, 
             function(data) {
             	console.log(data);
+                callAfter();
         	}
         );
     };
 
-    exports.getTrips = function() {
+    exports.getTrips = function(callAfter) {
     	$.post('/getTrips',
             {dayOfWeek:bus.filterCard.getDayOfWeek(),
              month:bus.filterCard.getMonth(),
@@ -42,6 +44,7 @@ bus.Db = function (){
             }, 
             function(data) {
             	console.log(data);
+                callAfter();
         	}
         );
     };

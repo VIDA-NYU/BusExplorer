@@ -208,18 +208,26 @@ bus.FilterCard = function(){
         var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export pings", dropClass);
         // add callback
         btn.on("click", function(){
-            alert("Callback pingSelector");
+            $("#pingSelector").button("loading");
+            var callAfter = function() {
+                $("#pingSelector").button("reset");
+            }
+            bus.db.getPings(callAfter);
         });
     }
 
     function aggregationSelector(propId){
-        var buttonId = "pingSelector";
+        var buttonId = "tripSelector";
 
         var dropClass = propId==0?"":"leftSpace";
         var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export trips", dropClass);
         // add callback
         btn.on("click", function(){
-            alert("Callback aggregationSelector");
+            $("#tripSelector").button("loading");
+            var callAfter = function() {
+                $("#tripSelector").button("reset");
+            }
+            bus.db.getTrips(callAfter);
         });
     }
 
