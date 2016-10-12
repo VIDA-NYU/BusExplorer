@@ -121,26 +121,35 @@ bus.Ui = function() {
             .data(bus.availableLionNames)
             .enter()
             .append('li')
-            .html(function(d) { return '<a href="#">' + d + '</a>'; });
+            .html(function(d) { return '<a href="#">' + d + '</a>'; })
+            .style("font-weight", "normal");
 
         // updates the button when selecting an item
         ul.selectAll("li")
             .on('click', function(d){
-                // d3.select('#'+ dropId +' button').html(d);
                 bus.selectedLionName = d;
 
                 // already loaded
-                if( !(bus.selectedBusName in bus.loadedBus) )
+                var index = bus.loadedLions.indexOf(d);
+                if( index < 0 ) {
+                    d3.select(this).select("a").style("font-weight", "bold");
                     __sig__.emit(__sig__.loadDataSet);
+                }
                 // changes selected
-                else
-                    __sig__.emit(__sig__.loadDataSetDone);
-
-                if(bus.pathCard != null)
+                else {
+                    bus.map.removeGeoJSON(d);
+                    bus.loadedLions.splice(index, 1);
+                    d3.select(this).select("a").style("font-weight", "normal");
                     return;
+                }
 
-                // creates a new card
-                bus.pathCard = new bus.PathCard();
+                if(bus.pathCard == null) {
+                    bus.pathCard = new bus.PathCard();
+                }
+                if(bus.pathCard.showed == false) {
+                    bus.pathCard.initCard(true);
+                }
+
                 // creates the card
                 bus.pathCard.initCard(true);
             });
@@ -163,7 +172,8 @@ bus.Ui = function() {
             .data(bus.availableLineNames)
             .enter()
             .append('li')
-            .html(function(d) { return '<a href="#">' + d + '</a>'; });
+            .html(function(d) { return '<a href="#">' + d + '</a>'; })
+            .style("font-weight", "normal");
 
         // updates the button when selecting an item
         ul.selectAll("li")
@@ -171,20 +181,31 @@ bus.Ui = function() {
                 bus.selectedLineName = d;
 
                 // already loaded
-                if( !(bus.selectedBusName in bus.loadedBus) )
+                var index = bus.loadedLines.indexOf(d);
+                if( index < 0 ) {
+                    d3.select(this).select("a").style("font-weight", "bold");
                     __sig__.emit(__sig__.loadDataSet);
+                }
                 // changes selected
-                else
-                    __sig__.emit(__sig__.loadDataSetDone);
-
-                if(bus.pathCard != null)
+                else {
+                    bus.map.removeLine(d);
+                    bus.loadedLines.splice(index, 1);
+                    d3.select(this).select("a").style("font-weight", "normal");
                     return;
+                }
 
-                // creates a new card
-                bus.pathCard = new bus.PathCard();
-                // creates the card
-                bus.pathCard.initCard(true);
+                if(bus.pathCard == null) {
+                    bus.pathCard = new bus.PathCard();
+                }
+                if(bus.pathCard.showed == false) {
+                    bus.pathCard.initCard(true);
+                }
             });
+    }
+
+    exports.clearPaths = function() {
+        d3.select("#lineSelector").selectAll("li").select("a").style("font-weight", "normal");
+        d3.select("#pathSelector").selectAll("li").select("a").style("font-weight", "normal");
     }
 
     // creates the add cart button
@@ -218,6 +239,7 @@ bus.Ui = function() {
             .enter()
             .append('li')
             .html(function(d) { return '<a href="#">' + d + '</a>'; });
+
 
         // updates the button when selecting an item
         ul.selectAll("li")

@@ -34,7 +34,8 @@ bus.selectedPlutoCompareName = "";
 
 
 // currently selected bus layers (busId:bus.Layer)
-bus.loadedBus = {};
+bus.loadedLines = [];
+bus.loadedLions = [];
 
 // currently selected bus layers (busId:rtree)
 bus.loadedIndex = {};
@@ -44,6 +45,7 @@ bus.loadedDataSet = {};
 
 bus.map = null;
 bus.db = null;
+bus.gui = null;
 
 //TODO: Remove?
 // number of created cards

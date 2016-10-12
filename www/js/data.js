@@ -68,32 +68,33 @@ bus.Data = function (){
 
         if(bus.selectedLionName !== "") {
             $.getJSON("/json/"+bus.selectedLionName+".geojson", function(json) {
-                bus.map.addGeoJson(json);
+                bus.map.addGeoJson(json, bus.selectedLionName);
                 bus.selectedLionName = "";
             });
         }
         else if(bus.selectedLineName !== "") {
+            bus.loadedLines.push(bus.selectedLineName);
             if(bus.selectedLineName.substring(0,1) === "B") {
                 $.getJSON("/json/buses_brooklyn.geojson", function(json) {
-                    bus.map.addLine(json);
+                    bus.map.addLine(json, bus.selectedLineName);
                     bus.selectedLineName = "";
                 });
             }
             else if(bus.selectedLineName.substring(0,2) === "Bx") {
                 $.getJSON("/json/buses_bronx.geojson", function(json) {
-                    bus.map.addLine(json);
+                    bus.map.addLine(json, bus.selectedLineName);
                     bus.selectedLineName = "";
                 });
             }
             else if(bus.selectedLineName.substring(0,1) === "M") {
                 $.getJSON("/json/buses_manhattan.geojson", function(json) {
-                    bus.map.addLine(json);
+                    bus.map.addLine(json, bus.selectedLineName);
                     bus.selectedLineName = "";
                 });
             }
             else if(bus.selectedLineName.substring(0,1) === "S") {
                 $.getJSON("/json/buses_staten.geojson", function(json) {
-                    bus.map.addLine(json);
+                    bus.map.addLine(json, bus.selectedLineName);
                     bus.selectedLineName = "";
                 });
             }

@@ -10,7 +10,7 @@ bus.Main = function() {
     // json i-o
     var dat = new bus.Data();
     // ui factory
-    var gui = new bus.Ui();
+    bus.gui = new bus.Ui();
     // db 
     bus.db = new bus.Db();
 
@@ -24,7 +24,7 @@ bus.Main = function() {
           __sig__.availableNames, dat, dat.availableNamesFile
         );
         Sigs.connect(
-          __sig__.availableNamesDone, gui, gui.initMenus
+          __sig__.availableNamesDone, bus.gui, bus.gui.initMenus
         );
 
         // load bus dataset
@@ -51,7 +51,7 @@ bus.Main = function() {
         // creates the map
         bus.map.createMap();
         // gets available json
-        gui.loadAvailableNames();
+        bus.gui.loadAvailableNames();
     };
 
     // API return

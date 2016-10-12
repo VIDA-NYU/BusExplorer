@@ -14,6 +14,7 @@ bus.PathCard = function(){
 
     // exported api
     var exports = {};
+    exports.showed = false;
 
     // clears the chart
     function clearFilter(){
@@ -66,12 +67,13 @@ bus.PathCard = function(){
 
         // add callback
         btn.on("click", function(){
-            var geojson = bus.map.highlightedPaths.toGeoJSON();
+            var geojson = bus.map.getHighlightedPath();
             download(JSON.stringify(geojson), 'geo.json', 'text/plain');
         });
     }
 
     exports.closeCard = function(){
+        exports.showed = false;
         if(cardDiv) cardDiv.remove();
     }
 
@@ -82,7 +84,11 @@ bus.PathCard = function(){
         var btn = bus.UiParts.Button(cardDiv, buttonId, "glyphicon glyphicon-remove");
         // add callback
         btn.on("click", function(){
+            exports.showed = false;
             bus.map.clearPaths();
+            bus.gui.clearPaths();
+            bus.loadedLines = [];
+            bus.loadedLions = [];
             // remove the card
             if(cardDiv) cardDiv.remove();
         });
@@ -101,6 +107,7 @@ bus.PathCard = function(){
         // close card
         closeCardButton();
 
+        exports.showed = true;
         
    };
 

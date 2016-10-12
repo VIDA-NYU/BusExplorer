@@ -84,6 +84,10 @@ html, body, #gmaps {
     vertical-align: middle;
 }
 
+.selected {
+    font-weight: bold;
+}
+
 #closeCard{
     float:right;
 }

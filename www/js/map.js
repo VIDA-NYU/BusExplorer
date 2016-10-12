@@ -11,9 +11,8 @@ bus.Map = function(){
 
     // exported api
     var exports = {};
-    exports.paths = new L.FeatureGroup();
-    exports.highlightedPaths = new L.FeatureGroup();
-    exports.selectedLine = undefined;
+    exports.paths = {};
+    exports.highlightedPaths = {};
 
     // create a new bus layer
     function createNewBus(render){
@@ -114,15 +113,6 @@ bus.Map = function(){
         return false;
     };
 
-    exports.highlightFeature = function(feature, layer) {
-        var style = {
-            "color": "#ff0000",
-        };
-        var aux = L.GeoJSON.geometryToLayer(feature);
-        aux.setStyle(style);
-        aux.addTo(bus.map.highlightedPaths);
-    }
-
     exports.onEachFeature = function(feature, layer) {
         // var that = this;
         layer.on({
@@ -178,46 +168,64 @@ bus.Map = function(){
                     newFeature.geometry.coordinates = [feature.geometry.coordinates[indexi][indexj], feature.geometry.coordinates[indexi][indexj+1]];
                 }                
                 
+                console.log(feature);
+
                 // add new feature to highlighted selection
                 var style = {
                     "color": "#ff0000",
                 };
-                var aux = L.GeoJSON.geometryToLayer(newFeature);
-                aux.setStyle(style);
-                aux.addTo(bus.map.highlightedPaths);
+                var aux = L.geoJSON(newFeature, {
+                    style: style
+                }).addTo(map);
+                bus.map.highlightedPaths[feature.properties.LINEARID] = aux;
             }
         });
     };
 
-    exports.addGeoJson = function(geojson){
-        L.geoJSON(geojson, {
+    exports.addGeoJson = function(geojson, name){
+        var geo = L.geoJSON(geojson, {
             onEachFeature: bus.map.onEachFeature
-        }).addTo(bus.map.paths);
+        }).addTo(map);
+        bus.map.paths[name] = geo;
     };
 
-    exports.addLine = function(geojson){
+    exports.addLine = function(geojson, lineName){
         var style = {
             "color": "#ff0000",
         };
 
-        L.geoJSON(geojson, {
+        var line = L.geoJSON(geojson, {
             filter: bus.map.filterByLine,
-            onEachFeature: bus.map.highlightFeature,
             style: style
-        });
+        }).addTo(map);
+        bus.map.highlightedPaths[lineName] = line;
+    };
+
+    exports.removeLine = function(lineName){
+        bus.map.highlightedPaths[lineName].remove();
     };
 
     exports.clearPaths = function(){
-        if(bus.map.paths != undefined)
-            bus.map.paths.clearLayers();
-        if(bus.map.highlightedPaths != undefined)
-            bus.map.highlightedPaths.clearLayers();
+        for(var p in bus.map.paths)
+            bus.map.paths[p].remove();
+        for(var p in bus.map.highlightedPaths)
+            bus.map.highlightedPaths[p].remove();
         
-        bus.map.paths = new L.FeatureGroup();
-        bus.map.highlightedPaths = new L.FeatureGroup();
-        bus.map.highlightedPaths.addTo(map);
-        bus.map.paths.addTo(map);
+        bus.map.paths = {};
+        bus.map.highlightedPaths = {};
     };
+
+    exports.getHighlightedPath = function() {
+        var featureGroup = new L.FeatureGroup();
+        for(var l in bus.map.highlightedPaths) {
+            var geojson = bus.map.highlightedPaths[l].toGeoJSON();
+            for(var f in geojson.features) {
+                var aux = L.GeoJSON.geometryToLayer(geojson.features[f]);
+                aux.addTo(featureGroup);
+            }
+        }
+        return featureGroup.toGeoJSON();
+    }
 
     // map creation
     exports.createMap = function(){
@@ -261,10 +269,6 @@ bus.Map = function(){
         L.control.zoom({
              position:'bottomleft'
         }).addTo(map);
-
-
-        bus.map.highlightedPaths.addTo(map);
-        bus.map.paths.addTo(map);
 
         // creates the three.js layer
         // thr = new ThreejsLayer({map:map}, exports.initGL);
