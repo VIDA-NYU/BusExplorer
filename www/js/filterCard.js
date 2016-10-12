@@ -11,6 +11,7 @@ bus.FilterCard = function(){
     // Divs
     var cardDiv  = undefined;
     var chartDiv = undefined;
+    var path     = undefined;
 
     // exported api
     var exports = {};
@@ -195,6 +196,7 @@ bus.FilterCard = function(){
                     "opacity": 0.8
                 }
                 bus.map.addGeoJson(JSON.parse(reader.result), "filter", style);
+                path = JSON.parse(reader.result);
             }
         })
 
@@ -283,19 +285,25 @@ bus.FilterCard = function(){
     };
 
     exports.getMonth = function(){
-        return $("#monthSelector").children("button").text();
+        var month = $("#monthSelector").children("button").text();
+        if(month === "All")
+            return -1;
+        return parseInt(month);
     };
 
     exports.getYear = function(){
-        return $("#yearSelector").children("button").text();
+        var year = $("#yearSelector").children("button").text();
+        if(year === "All")
+            return -1;
+        return parseInt(year);
     };
 
     exports.getStartHour = function(){
-        return $("#picker").attr("value").split(",")[0];
+        return parseInt($("#picker").attr("value").split(",")[0]);
     };
 
     exports.getEndHour = function(){
-        return $("#picker").attr("value").split(",")[1];
+        return parseInt($("#picker").attr("value").split(",")[1]);
     };
 
     exports.getIds = function(){
@@ -307,7 +315,7 @@ bus.FilterCard = function(){
     };
 
     exports.getPath = function(){
-
+        return path;
     };
 
 
