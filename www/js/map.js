@@ -13,6 +13,7 @@ bus.Map = function(){
     var exports = {};
     exports.paths = {};
     exports.highlightedPaths = {};
+    exports.highlightedLines = {};
 
     // create a new bus layer
     function createNewBus(render){
@@ -186,7 +187,14 @@ bus.Map = function(){
         var geo = L.geoJSON(geojson, {
             onEachFeature: bus.map.onEachFeature
         }).addTo(map);
+        geo.bringToBack();
         bus.map.paths[name] = geo;
+    };
+
+    exports.removeGeoJSON = function(name){
+        bus.map.paths[name].remove();
+        for(var p in bus.map.highlightedPaths)
+            bus.map.highlightedPaths[p].remove();
     };
 
     exports.addLine = function(geojson, lineName){
@@ -198,11 +206,12 @@ bus.Map = function(){
             filter: bus.map.filterByLine,
             style: style
         }).addTo(map);
-        bus.map.highlightedPaths[lineName] = line;
+        line.bringToFront();
+        bus.map.highlightedLines[lineName] = line;
     };
 
     exports.removeLine = function(lineName){
-        bus.map.highlightedPaths[lineName].remove();
+        bus.map.highlightedLines[lineName].remove();
     };
 
     exports.clearPaths = function(){
@@ -210,15 +219,25 @@ bus.Map = function(){
             bus.map.paths[p].remove();
         for(var p in bus.map.highlightedPaths)
             bus.map.highlightedPaths[p].remove();
+        for(var p in bus.map.highlightedLines)
+            bus.map.highlightedLines[p].remove();
         
         bus.map.paths = {};
         bus.map.highlightedPaths = {};
+        bus.map.highlightedLines = {};
     };
 
     exports.getHighlightedPath = function() {
         var featureGroup = new L.FeatureGroup();
         for(var l in bus.map.highlightedPaths) {
             var geojson = bus.map.highlightedPaths[l].toGeoJSON();
+            for(var f in geojson.features) {
+                var aux = L.GeoJSON.geometryToLayer(geojson.features[f]);
+                aux.addTo(featureGroup);
+            }
+        }
+        for(var l in bus.map.highlightedLines) {
+            var geojson = bus.map.highlightedLines[l].toGeoJSON();
             for(var f in geojson.features) {
                 var aux = L.GeoJSON.geometryToLayer(geojson.features[f]);
                 aux.addTo(featureGroup);

@@ -149,9 +149,6 @@ bus.Ui = function() {
                 if(bus.pathCard.showed == false) {
                     bus.pathCard.initCard(true);
                 }
-
-                // creates the card
-                bus.pathCard.initCard(true);
             });
     }
 

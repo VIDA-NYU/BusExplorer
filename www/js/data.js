@@ -67,6 +67,7 @@ bus.Data = function (){
     exports.loadDataSetFile = function() {
 
         if(bus.selectedLionName !== "") {
+            bus.loadedLions.push(bus.selectedLionName);
             $.getJSON("/json/"+bus.selectedLionName+".geojson", function(json) {
                 bus.map.addGeoJson(json, bus.selectedLionName);
                 bus.selectedLionName = "";
