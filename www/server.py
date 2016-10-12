@@ -25,7 +25,9 @@ class StackMirror():
 
     def getData(self, geoJson):
         query = {"VehicleLocation" : {"$geoWithin": geoJson}}
-        records = self.collection.find()
+        filters.append(query)
+        
+        records = self.collection.find({'$and': filters})
         return records
 
 
