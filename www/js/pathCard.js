@@ -68,7 +68,9 @@ bus.PathCard = function(){
         // add callback
         btn.on("click", function(){
             var geojson = bus.map.getHighlightedPath();
-            download(JSON.stringify(geojson), 'geo.json', 'text/plain');
+            var buffered = calculateBuffer(geojson);
+            download(JSON.stringify(buffered), 'geo.json', 'text/plain');
+            // download(JSON.stringify(geojson), 'geo.json', 'text/plain');
         });
     }
 
