@@ -57,7 +57,7 @@ class StackMirror():
         return ("%s,%f,%f,%f,%s,%s,%s,%s,%s,%s,%s,%s")%\
                 (record["OriginRef"],record["Bearing"],record["VehicleLocation"][1],record["VehicleLocation"][0],\
                  record["VehicleRef"],record["DestinationName"],record["JourneyPatternRef"],record["RecordedAtTime"],\
-                 record["LineRef"],record["PublishedLineName"],record["DatedVehicleJourneyRef"].rstrip(),record["DirectionRef"])
+                 record["LineRef"],record["PublishedLineName"],record["DatedVehicleJourneyRef"],record["DirectionRef"])
 
     def getRecords(self, geoJson, filters):
 
@@ -83,24 +83,24 @@ class StackMirror():
         for f in features:
             cursor = self.getRecords(f, filters[:])
             records = list(cursor)
-            lines = {}
+            buses = {}
             firstPing = {}
             lastPing  = {}
             for e in records:
-                print e['RecordedAtTime'].year
-                l = e['DatedVehicleJourneyRef']
-                if l in lines:
-                    lines[l].append(e)
-                    if e['RecordedAtTime'] < firstPing[l]:
-                        firstPing[l] = e['RecordedAtTime']
-                    if e['RecordedAtTime'] > lastPing[l]:
-                        lastPing[l] = e['RecordedAtTime']
-
+                b = e['DatedVehicleJourneyRef']
+                if b in buses:
+                    buses[b].append(e)
+                    if e['RecordedAtTime'] < firstPing[b]:
+                        firstPing[b] = e['RecordedAtTime']
+                    if e['RecordedAtTime'] > lastPing[b]:
+                        lastPing[b] = e['RecordedAtTime']
                 else:
-                    lines[l] = []
-                    lines[l].append(e)
-                    lastPing[l] = e['RecordedAtTime']
-                    firstPing[l] = e['RecordedAtTime']
+                    buses[b] = []
+                    buses[b].append(e)
+                    lastPing[b] = e['RecordedAtTime']
+                    firstPing[b] = e['RecordedAtTime']
+
+        formatted = '\n'.join("%s,%s,%s,%s"%(b,buses[b][0]['PublishedLineName'],firstPing[b],lastPing[b]) for b in buses)
 
         cherrypy.response.headers['Content-Type']        = 'text/csv'
         cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'

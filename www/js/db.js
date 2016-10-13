@@ -55,13 +55,14 @@ bus.Db = function (){
     		type: "POST",
     		url: "getTrips",
     		contentType: "application/json",
-    		dataType: "json",
+    		dataType: "text",
     		data: JSON.stringify(data),
     		error: function() {
     			alert("Error getTrips");
     			callAfter();
     		},
-    		success: function() {
+    		success: function(data) {
+                download(data,"export.csv","text/plain");
     			callAfter();
     		}, 
         });

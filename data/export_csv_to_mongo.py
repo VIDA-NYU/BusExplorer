@@ -29,7 +29,7 @@ def readFile(fileName, numLines, dbName, collectionName, erase):
     f = open(fileName)
     count = 0
     for line in f:
-        tokens = line.split(',')
+        tokens = line.rstrip().split(',')
 
         dateObj = datetime.strptime(tokens[0][0:-6], '%Y-%m-%dT%H:%M:%S.%f')
         hour = dateObj.hour
