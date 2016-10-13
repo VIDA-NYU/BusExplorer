@@ -24,7 +24,33 @@ class StackMirror():
 
 
     def getFilters(self, json):
-        return
+        filters = []
+
+        startHour = json['startHour']
+        if(startHour != -1):
+            filters.append({'$where' : 'return (this.hour >= %d)'%startHour })
+
+        endHour   = json['endHour']
+        if(endHour != -1):
+            filters.append({'$where' : 'return (this.hour <= %d)'%endHour })
+
+        dayOfWeek = json['dayOfWeek']
+        if(dayOfWeek != -1):
+            filters.append({'$where' : 'return this.dayOfWeek == %d'%dayOfWeek })
+
+        month = json['month']
+        if(month != -1):
+            filters.append({'$where' : 'return this.month == %d'%month })
+
+        year = json['year']
+        if(year != -1):
+            filters.append({'$where' : 'return this.year == %d'%year })
+
+        lines = json['lines'].split(',')
+        if(len(lines) > 0 and lines[0] != ''):
+            filters.append({"PublishedLineName" : {'$in' : lines }})
+
+        return filters
 
     def getFormattedLine(self, record):
         return ("%s,%f,%f,%f,%s,%s,%s,%s,%s,%s,%s,%s")%\
@@ -32,8 +58,7 @@ class StackMirror():
                  record["VehicleRef"],record["DestinationName"],record["JourneyPatternRef"],record["RecordedAtTime"],\
                  record["LineRef"],record["PublishedLineName"],record["DatedVehicleJourneyRef"],record["DirectionRef"])
 
-    def getRecords(self, geoJson):
-        filters = []
+    def getRecords(self, geoJson, filters):
 
         # modify geoJson so that it suits pymongo
         geoJson.pop("type")
@@ -41,7 +66,7 @@ class StackMirror():
         geoJson["$geometry"] = geoJson.pop("geometry")
 
         query = {"VehicleLocation" : {"$geoWithin": geoJson}}
-        filters.append(query)
+        filters.insert(0,query)
         
         cursor = self.collection.find({'$and': filters})
         return cursor
@@ -51,16 +76,19 @@ class StackMirror():
     @cherrypy.tools.json_in()
     def getPings(self):
         inputJson = cherrypy.request.json
+        filters  = self.getFilters(inputJson)
         features = inputJson['path']['features']
 
         formatted = ''
         for f in features:
-            cursor = self.getRecords(f)
+            cursor = self.getRecords(f, filters[:])
             records = list(cursor)
             formatted = '\n'.join(self.getFormattedLine(records[n]) for n in xrange(len(records)))
 
         cherrypy.response.headers['Content-Type']        = 'text/csv'
         cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
+
+        print formatted
         return formatted
 
 def startServer(dbName, collectionName):
