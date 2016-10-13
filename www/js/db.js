@@ -34,13 +34,14 @@ bus.Db = function (){
     		type: "POST",
     		url: "getPings",
     		contentType: "application/json",
-    		dataType: "json",
+    		dataType: "text",
     		data: JSON.stringify(data),
     		error: function() {
     			alert("Error getPings");
     			callAfter();
     		},
-    		success: function() {
+    		success: function(data) {
+                console.log(data);
     			callAfter();
     		}, 
         });

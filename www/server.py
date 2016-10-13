@@ -22,7 +22,17 @@ class StackMirror():
     def index(self):
         return file("index.html")
 
-    def getData(self, geoJson):
+
+    def getFilters(self, json):
+        return
+
+    def getFormattedLine(self, record):
+        return ("%s,%f,%f,%f,%s,%s,%s,%s,%s,%s,%s,%s")%\
+                (record["OriginRef"],record["Bearing"],record["VehicleLocation"][1],record["VehicleLocation"][0],\
+                 record["VehicleRef"],record["DestinationName"],record["JourneyPatternRef"],record["RecordedAtTime"],\
+                 record["LineRef"],record["PublishedLineName"],record["DatedVehicleJourneyRef"],record["DirectionRef"])
+
+    def getRecords(self, geoJson):
         filters = []
 
         # modify geoJson so that it suits pymongo
@@ -33,19 +43,25 @@ class StackMirror():
         query = {"VehicleLocation" : {"$geoWithin": geoJson}}
         filters.append(query)
         
-        records = self.collection.find({'$and': filters})
-        print len(list(records))
-        return records
+        cursor = self.collection.find({'$and': filters})
+        return cursor
 
 
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     def getPings(self):
         inputJson = cherrypy.request.json
         features = inputJson['path']['features']
+
+        formatted = ''
         for f in features:
-            data = self.getData(f)
+            cursor = self.getRecords(f)
+            records = list(cursor)
+            formatted = '\n'.join(self.getFormattedLine(records[n]) for n in xrange(len(records)))
+
+        cherrypy.response.headers['Content-Type']        = 'text/csv'
+        cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
+        return formatted
 
 def startServer(dbName, collectionName):
     # Uncomment below for server functionality
