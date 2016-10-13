@@ -41,7 +41,7 @@ bus.Db = function (){
     			callAfter();
     		},
     		success: function(data) {
-                console.log(data);
+                download(data,"export.csv","text/plain");
     			callAfter();
     		}, 
         });

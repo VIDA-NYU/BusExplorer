@@ -56,7 +56,7 @@ class StackMirror():
         return ("%s,%f,%f,%f,%s,%s,%s,%s,%s,%s,%s,%s")%\
                 (record["OriginRef"],record["Bearing"],record["VehicleLocation"][1],record["VehicleLocation"][0],\
                  record["VehicleRef"],record["DestinationName"],record["JourneyPatternRef"],record["RecordedAtTime"],\
-                 record["LineRef"],record["PublishedLineName"],record["DatedVehicleJourneyRef"],record["DirectionRef"])
+                 record["LineRef"],record["PublishedLineName"],record["DatedVehicleJourneyRef"].rstrip(),record["DirectionRef"])
 
     def getRecords(self, geoJson, filters):
 
@@ -88,7 +88,6 @@ class StackMirror():
         cherrypy.response.headers['Content-Type']        = 'text/csv'
         cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
 
-        print formatted
         return formatted
 
 def startServer(dbName, collectionName):

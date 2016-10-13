@@ -45,18 +45,6 @@ bus.PathCard = function(){
     //     a.click();
     // }
 
-    function download(text, name, type) {
-        if (navigator.msSaveBlob)
-        {
-          var blob = new Blob([text],{type: type});
-          navigator.msSaveBlob(blob, name)
-        }
-        else
-        {
-          window.open('data:text/csv;charset=utf-8,' + escape(text));                      
-        } 
-    }
-
     // selects the property
     function pathSelector(propId){
         var buttonId = "pathSelector";
