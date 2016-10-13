@@ -106,6 +106,7 @@ bus.Map = function(){
     };
 
     exports.filterByLine = function(feature, layer) {
+        console.log(bus.selectedLineName,feature.properties.Route);
         if(bus.selectedLineName === "")
             return true
         if(feature.properties.Route === bus.selectedLineName)

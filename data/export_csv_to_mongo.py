@@ -37,7 +37,7 @@ def readFile(fileName, numLines, dbName, collectionName, erase):
         vehicleRef = tokens[4]
         destinationName = tokens[5]
         bearing = float(tokens[6])
-        loc = [float(tokens[7]),float(tokens[8])]
+        loc = [float(tokens[8]),float(tokens[7])]
         publishedLineName = tokens[9]
         journeyPatternRef = tokens[10]
         datedVehicleJourneyRef = tokens[11]

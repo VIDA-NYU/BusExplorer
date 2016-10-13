@@ -99,6 +99,12 @@ bus.Data = function (){
                     bus.selectedLineName = "";
                 });
             }
+            else if(bus.selectedLineName.substring(0,1) === "Q") {
+                $.getJSON("/json/buses_queens.geojson", function(json) {
+                    bus.map.addLine(json, bus.selectedLineName);
+                    bus.selectedLineName = "";
+                });
+            }
         }
     };
 
