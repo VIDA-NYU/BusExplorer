@@ -58,7 +58,7 @@ bus.Db = function (){
     		dataType: "json",
     		data: JSON.stringify(data),
     		error: function() {
-    			alert("Error getPings");
+    			alert("Error getTrips");
     			callAfter();
     		},
     		success: function() {

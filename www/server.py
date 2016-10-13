@@ -27,24 +27,25 @@ class StackMirror():
         filters = []
 
         startHour = json['startHour']
-        if(startHour != -1):
-            filters.append({'$where' : 'return (this.hour >= %d)'%startHour })
-
         endHour   = json['endHour']
-        if(endHour != -1):
-            filters.append({'$where' : 'return (this.hour <= %d)'%endHour })
+        if(startHour != -1 and endHour != -1):
+            filters.append({"hour": {"$gte":startHour,"$lte":startHour}})
+        elif(startHour == -1 and endHour != -1):
+            filters.append({"hour": {"$lte":startHour}})
+        elif(startHour != -1 and endHour == -1):
+            filters.append({"hour": {"$gte":startHour}})
 
         dayOfWeek = json['dayOfWeek']
         if(dayOfWeek != -1):
-            filters.append({'$where' : 'return this.dayOfWeek == %d'%dayOfWeek })
+            filters.append({"dayOfWeek": dayOfWeek})
 
         month = json['month']
         if(month != -1):
-            filters.append({'$where' : 'return this.month == %d'%month })
+            filters.append({"month": month})
 
         year = json['year']
         if(year != -1):
-            filters.append({'$where' : 'return this.year == %d'%year })
+            filters.append({"year": year})
 
         lines = json['lines'].split(',')
         if(len(lines) > 0 and lines[0] != ''):
@@ -71,6 +72,40 @@ class StackMirror():
         cursor = self.collection.find({'$and': filters})
         return cursor
 
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    def getTrips(self):
+        inputJson = cherrypy.request.json
+        filters  = self.getFilters(inputJson)
+        features = inputJson['path']['features']
+
+        formatted = ''
+        for f in features:
+            cursor = self.getRecords(f, filters[:])
+            records = list(cursor)
+            lines = {}
+            firstPing = {}
+            lastPing  = {}
+            for e in records:
+                print e['RecordedAtTime'].year
+                l = e['DatedVehicleJourneyRef']
+                if l in lines:
+                    lines[l].append(e)
+                    if e['RecordedAtTime'] < firstPing[l]:
+                        firstPing[l] = e['RecordedAtTime']
+                    if e['RecordedAtTime'] > lastPing[l]:
+                        lastPing[l] = e['RecordedAtTime']
+
+                else:
+                    lines[l] = []
+                    lines[l].append(e)
+                    lastPing[l] = e['RecordedAtTime']
+                    firstPing[l] = e['RecordedAtTime']
+
+        cherrypy.response.headers['Content-Type']        = 'text/csv'
+        cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
+
+        return formatted
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -104,7 +139,7 @@ def startServer(dbName, collectionName):
 
     # sudo iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
     cherrypy.config.update({'server.socket_host': '0.0.0.0',
-                            'engine.autoreload_on': True
+                            'engine.autoreload.on': True
                             })
     cherrypy.engine.start()
 

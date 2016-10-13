@@ -18,6 +18,12 @@ def readFile(fileName, numLines, dbName, collectionName, erase):
     db = client[dbName]
     collection = db[collectionName]
     collection.create_index([("VehicleLocation", pymongo.GEOSPHERE)])
+    collection.create_index([("hour", 1)])
+    collection.create_index([("month", 1)])
+    collection.create_index([("dayOfWeek", 1)])
+    collection.create_index([("year", 1)])
+    collection.create_index([("PublishedLineName", 1)])
+    collection.create_index([("DirectionRef", 1)])
     
 
     f = open(fileName)
