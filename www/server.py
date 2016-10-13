@@ -79,13 +79,13 @@ class StackMirror():
         filters  = self.getFilters(inputJson)
         features = inputJson['path']['features']
 
-        formatted = ''
+        buses = {}
+        firstPing = {}
+        lastPing  = {}
         for f in features:
             cursor = self.getRecords(f, filters[:])
             records = list(cursor)
-            buses = {}
-            firstPing = {}
-            lastPing  = {}
+            
             for e in records:
                 b = e['DatedVehicleJourneyRef']
                 if b in buses:
