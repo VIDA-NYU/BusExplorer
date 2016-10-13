@@ -238,6 +238,10 @@ bus.FilterCard = function(){
     }
 
     exports.closeCard = function(){
+        bus.map.clearPaths();
+        bus.gui.clearPaths();
+        bus.loadedLines = [];
+        bus.loadedLions = [];
         if(cardDiv) cardDiv.remove();
     }
 
