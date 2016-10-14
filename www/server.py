@@ -80,8 +80,8 @@ class StackMirror():
         for b in buses:
             speeds[b] = []
             for i in range(1,len(buses[b])):
-                p0 = buses[b][i-1]['VehicleLocation']
-                p1 = buses[b][i]['VehicleLocation']
+                p0 = [buses[b][i-1]['VehicleLocation'][1],buses[b][i-1]['VehicleLocation'][0]] #lat,lon format
+                p1 = [buses[b][i]['VehicleLocation'][1],buses[b][i]['VehicleLocation'][0]]
 
                 dist = distance.distance(p0,p1).meters
 
@@ -93,6 +93,8 @@ class StackMirror():
                 else:
                     speedMs = 0
                 speedKh = speedMs * 3.6
+
+                print p0,p1,dist,(t1-t0).seconds,speedKh
 
                 speeds[b].append(speedKh)
 
