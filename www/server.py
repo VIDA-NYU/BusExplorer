@@ -135,7 +135,7 @@ class StackMirror():
 ##################################################################################
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    def getTrips(self):
+    def getTripsCSV(self):
         inputJson = cherrypy.request.json
         filters  = self.getFilters(inputJson)
         features = inputJson['path']['features']
@@ -173,7 +173,7 @@ class StackMirror():
 ##################################################################################
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    def getPings(self):
+    def getPingsCSV(self):
         inputJson = cherrypy.request.json
         filters  = self.getFilters(inputJson)
         features = inputJson['path']['features']
@@ -191,11 +191,11 @@ class StackMirror():
 
 
 ##################################################################################
-#### Server: return requested avg speed
+#### Server: return requested avg speed as csv
 ##################################################################################
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    def getSpeed(self):
+    def getSpeedCSV(self):
         inputJson = cherrypy.request.json
         filters  = self.getFilters(inputJson)
         features = inputJson['path']['features']
@@ -215,6 +215,27 @@ class StackMirror():
         cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
 
         return formatted
+
+##################################################################################
+#### Server: return requested avg speed
+##################################################################################
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def getSpeed(self):
+        inputJson = cherrypy.request.json
+        filters  = self.getFilters(inputJson)
+        features = inputJson['path']['features']
+
+        outputJson = {}
+        count = 0
+        for f in features:
+            cursor = self.getRecords(f, filters[:])
+            records = list(cursor)
+            outputJson[count] = self.computeAvgSpeedPerLine(records)
+            count+=1
+
+        return outputJson
 
 def startServer(dbName, collectionName):
     # Uncomment below for server functionality

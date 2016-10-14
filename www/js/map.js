@@ -8,6 +8,7 @@ bus.Map = function(){
     // map object
     var map = undefined;
     var thr = undefined;
+    var colorScale = new bus.ColorScale();
 
     // exported api
     var exports = {};
@@ -219,6 +220,20 @@ bus.Map = function(){
         line.bringToFront();
         bus.map.highlightedLines[lineName] = line;
     };
+
+    exports.showSpeed = function(json) {
+        console.log(json);
+        var count = 0;
+        for(p in bus.map.paths) {
+            var avgSpeed = 0;
+            for(var l in json[count]) {
+                avgSpeed += json[count][l];
+            }
+            avgSpeed = avgSpeed / (Object.keys(json[count]).length);
+            bus.map.paths[p].setStyle({color: colorScale.getHexColor(avgSpeed)});
+            count++;
+        }
+    }
 
     exports.removeLine = function(lineName){
         bus.map.highlightedLines[lineName].remove();

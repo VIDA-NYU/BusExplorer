@@ -12,7 +12,7 @@ bus.Db = function (){
 
     };
 
-    function getData(){
+    function getFilters(){
     	var data = {
 			dayOfWeek:bus.filterCard.getDayOfWeek(),
 			month:bus.filterCard.getMonth(),
@@ -28,11 +28,11 @@ bus.Db = function (){
 
     exports.getSpeed = function(callAfter){
 
-        var data = getData();
+        var data = getFilters();
         
         $.ajax({
             type: "POST",
-            url: "getSpeed",
+            url: "getSpeedCSV",
             contentType: "application/json",
             dataType: "text",
             data: JSON.stringify(data),
@@ -47,13 +47,35 @@ bus.Db = function (){
         });
     };
 
+    exports.showSpeed = function(callAfter){
+
+        var data = getFilters();
+        
+        $.ajax({
+            type: "POST",
+            url: "getSpeed",
+            contentType: "application/json",
+            dataType: "text",
+            data: JSON.stringify(data),
+            error: function() {
+                alert("Error getSpeed");
+                callAfter();
+            },
+            success: function(data) {
+            	data = JSON.parse(data);
+            	bus.map.showSpeed(data);
+                callAfter();
+            }, 
+        });
+    };
+
     exports.getPings = function(callAfter){
 
-    	var data = getData();
+    	var data = getFilters();
         
     	$.ajax({
     		type: "POST",
-    		url: "getPings",
+    		url: "getPingsCSV",
     		contentType: "application/json",
     		dataType: "text",
     		data: JSON.stringify(data),
@@ -70,11 +92,11 @@ bus.Db = function (){
 
     exports.getTrips = function(callAfter) {
 
-    	var data = getData();
+    	var data = getFilters();
     	
     	$.ajax({
     		type: "POST",
-    		url: "getTrips",
+    		url: "getTripsCSV",
     		contentType: "application/json",
     		dataType: "text",
     		data: JSON.stringify(data),

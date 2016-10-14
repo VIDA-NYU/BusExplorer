@@ -207,7 +207,7 @@ bus.FilterCard = function(){
     }
 
     // selects the property
-    function pingSelector(propId){
+    function exportPingSelector(propId){
         var buttonId = "pingSelector";
 
         var dropClass = propId==0?"":"leftSpace";
@@ -222,7 +222,7 @@ bus.FilterCard = function(){
         });
     }
 
-    function aggregationSelector(propId){
+    function exportAggregationSelector(propId){
         var buttonId = "tripSelector";
 
         var dropClass = propId==0?"":"leftSpace";
@@ -238,18 +238,33 @@ bus.FilterCard = function(){
         });
     }
 
-    function speedSelector(propId){
-        var buttonId = "speedSelector";
+    function exportSpeedSelector(propId){
+        var buttonId = "exportSpeedSelector";
 
         var dropClass = propId==0?"":"topSpace";
         var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export speed", dropClass);
         // add callback
         btn.on("click", function(){
-            $("#speedSelector").button("loading");
+            $("#exportSpeedSelector").button("loading");
             var callAfter = function() {
-                $("#speedSelector").button("reset");
+                $("#exportSpeedSelector").button("reset");
             }
             bus.db.getSpeed(callAfter);
+        });
+    }
+
+    function showSpeedSelector(propId){
+        var buttonId = "showSpeedSelector";
+
+        var dropClass = propId==0?"":"topSpace leftSpace";
+        var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Show speed", dropClass);
+        // add callback
+        btn.on("click", function(){
+            $("#showSpeedSelector").button("loading");
+            var callAfter = function() {
+                $("#showSpeedSelector").button("reset");
+            }
+            bus.db.showSpeed(callAfter);
         });
     }
 
@@ -276,9 +291,10 @@ bus.FilterCard = function(){
         idSelector(0);
         lineSelector(0);
         pathSelector(0);
-        pingSelector(0);
-        aggregationSelector(1);
-        speedSelector(1);
+        exportPingSelector(0);
+        exportAggregationSelector(1);
+        exportSpeedSelector(1);
+        showSpeedSelector(1);
 
     };
 

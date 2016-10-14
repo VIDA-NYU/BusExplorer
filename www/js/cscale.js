@@ -14,9 +14,10 @@ bus.ColorScale = function(){
                   [209,229,240],[146,197,222],[ 67,147,195],[ 33,102,172]];
 
     // sequential colormap
-    var seqMap = [[255,247,236],[254,232,200],[253,212,158],[253,187,132],
-                  [252,141, 89], // central color
-                  [239,101, 72],[215, 48, 31],[179,  0,  0],[127,  0,  0]];
+    // var seqMap = [[255,247,236],[254,232,200],[253,212,158],[253,187,132],
+                  // [252,141, 89], // central color
+                  // [239,101, 72],[215, 48, 31],[179,  0,  0],[127,  0,  0]];
+    var seqMap = [[26, 150, 65], [166, 217, 106], [255, 255, 191], [253, 174, 97], [215, 25, 28],[215, 15, 10]];
 
     // linear interpolation
     function lerp(a, b, u){
@@ -36,7 +37,7 @@ bus.ColorScale = function(){
         val = 1-val;
 
         // scale conversion
-        var bin = val*7;
+        var bin = val*(cmap.length-2);
 
         // color bin
         var idx = Math.floor(bin);
@@ -50,6 +51,16 @@ bus.ColorScale = function(){
         // return the color
         return [r,g,b];
     }
+
+    function componentToHex(c) {
+        var hex = c.toString(16);
+        return hex.length == 1 ? "0" + hex : hex;
+    }
+
+    exports.getHexColor = function(val, isDiv) {
+        var rgb = getColor(val, isDiv);
+        return "#" + componentToHex(rgb[0]) + componentToHex(rgb[1]) + componentToHex(rgb[2]);
+    };
 
     // Threejs color
     exports.getThreeColor = function(val, isDiv){
