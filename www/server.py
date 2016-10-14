@@ -103,6 +103,9 @@ class StackMirror():
             else:
                 avgSpeeds[b] = 0
 
+            if avgSpeeds[b] < 0.5:
+                avgSpeeds[b] = 0
+
         return avgSpeeds
 
 ##################################################################################
@@ -206,7 +209,7 @@ class StackMirror():
             cursor = self.getRecords(f, filters[:])
             records = list(cursor)
             avgSpeedPerLine = self.computeAvgSpeedPerLine(records)
-            formatted += '\n'.join("%d,%s,%f"%(count,l,avgSpeedPerLine[l]) for l in avgSpeedPerLine)
+            formatted += ''.join("%d,%s,%f\n"%(count,l,avgSpeedPerLine[l]) for l in avgSpeedPerLine)
             count+=1
 
         cherrypy.response.headers['Content-Type']        = 'text/csv'
