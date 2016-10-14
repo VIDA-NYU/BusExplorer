@@ -26,6 +26,27 @@ bus.Db = function (){
         return data;
     }
 
+    exports.getSpeed = function(callAfter){
+
+        var data = getData();
+        
+        $.ajax({
+            type: "POST",
+            url: "getSpeed",
+            contentType: "application/json",
+            dataType: "text",
+            data: JSON.stringify(data),
+            error: function() {
+                alert("Error getSpeed");
+                callAfter();
+            },
+            success: function(data) {
+                download(data,"export.csv","text/plain");
+                callAfter();
+            }, 
+        });
+    };
+
     exports.getPings = function(callAfter){
 
     	var data = getData();

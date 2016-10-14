@@ -227,6 +227,7 @@ bus.FilterCard = function(){
 
         var dropClass = propId==0?"":"leftSpace";
         var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export trips", dropClass);
+
         // add callback
         btn.on("click", function(){
             $("#tripSelector").button("loading");
@@ -234,6 +235,21 @@ bus.FilterCard = function(){
                 $("#tripSelector").button("reset");
             }
             bus.db.getTrips(callAfter);
+        });
+    }
+
+    function speedSelector(propId){
+        var buttonId = "speedSelector";
+
+        var dropClass = propId==0?"":"topSpace";
+        var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export speed", dropClass);
+        // add callback
+        btn.on("click", function(){
+            $("#speedSelector").button("loading");
+            var callAfter = function() {
+                $("#speedSelector").button("reset");
+            }
+            bus.db.getSpeed(callAfter);
         });
     }
 
@@ -262,6 +278,7 @@ bus.FilterCard = function(){
         pathSelector(0);
         pingSelector(0);
         aggregationSelector(1);
+        speedSelector(1);
 
     };
 

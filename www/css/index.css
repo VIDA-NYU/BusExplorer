@@ -56,7 +56,7 @@ html, body, #gmaps {
 
 .filter{
     width: 250px;
-    height: 600px;
+    height: 650px;
     margin-bottom: 5px;
 }
 
@@ -71,6 +71,10 @@ html, body, #gmaps {
 
 .leftSpace{
     margin-left: 5px;
+}
+
+.topSpace{
+    margin-top: 5px;
 }
 
 .scrollable-menu {

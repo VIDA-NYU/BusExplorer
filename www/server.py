@@ -3,6 +3,7 @@
 
 from os import path, curdir
 from pymongo import MongoClient
+from geopy import distance
 import cherrypy
 import os
 import csv
@@ -23,6 +24,9 @@ class StackMirror():
         return file("index.html")
 
 
+##################################################################################
+#### Return filters in pymongodb format
+##################################################################################
     def getFilters(self, json):
         filters = []
 
@@ -53,12 +57,64 @@ class StackMirror():
 
         return filters
 
+##################################################################################
+#### Compute avg speed per line
+##################################################################################
+    def computeAvgSpeedPerLine(self, records):
+
+        buses = {}
+        for r in records:
+            b = r["DatedVehicleJourneyRef"]
+            if b in buses:
+                buses[b].append(r)
+            else:
+                buses[b] = []
+                buses[b].append(r)
+
+        for b in buses:
+            buses[b].sort(key = lambda r : r['RecordedAtTime'])
+
+        # Compute speed between successive pings
+        speeds = {}
+        avgSpeeds = {}
+        for b in buses:
+            speeds[b] = []
+            for i in range(1,len(buses[b])):
+                p0 = buses[b][i-1]['VehicleLocation']
+                p1 = buses[b][i]['VehicleLocation']
+
+                dist = distance.distance(p0,p1).meters
+
+                t0 = buses[b][i-1]['RecordedAtTime']
+                t1 = buses[b][i]['RecordedAtTime']
+
+                if (t1-t0).seconds > 0:
+                    speedMs = (dist / (t1-t0).seconds) # in meters / seconds
+                else:
+                    speedMs = 0
+                speedKh = speedMs * 3.6
+
+                speeds[b].append(speedKh)
+
+            if len(speeds[b]) > 0:
+                avgSpeeds[b] = sum(speeds[b]) / float(len(speeds[b]))
+            else:
+                avgSpeeds[b] = 0
+
+        return avgSpeeds
+
+##################################################################################
+#### Format records to csv
+##################################################################################
     def getFormattedLine(self, record):
         return ("%s,%f,%f,%f,%s,%s,%s,%s,%s,%s,%s,%s")%\
                 (record["OriginRef"],record["Bearing"],record["VehicleLocation"][1],record["VehicleLocation"][0],\
                  record["VehicleRef"],record["DestinationName"],record["JourneyPatternRef"],record["RecordedAtTime"],\
                  record["LineRef"],record["PublishedLineName"],record["DatedVehicleJourneyRef"],record["DirectionRef"])
 
+##################################################################################
+#### Return records
+##################################################################################
     def getRecords(self, geoJson, filters):
 
         # modify geoJson so that it suits pymongo
@@ -72,6 +128,9 @@ class StackMirror():
         cursor = self.collection.find({'$and': filters})
         return cursor
 
+##################################################################################
+#### Server: return requested trip info
+##################################################################################
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def getTrips(self):
@@ -107,6 +166,9 @@ class StackMirror():
 
         return formatted
 
+##################################################################################
+#### Server: return requested pings
+##################################################################################
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def getPings(self):
@@ -118,7 +180,32 @@ class StackMirror():
         for f in features:
             cursor = self.getRecords(f, filters[:])
             records = list(cursor)
-            formatted = '\n'.join(self.getFormattedLine(records[n]) for n in xrange(len(records)))
+            formatted += '\n'.join(self.getFormattedLine(records[n]) for n in xrange(len(records)))
+
+        cherrypy.response.headers['Content-Type']        = 'text/csv'
+        cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
+
+        return formatted
+
+
+##################################################################################
+#### Server: return requested avg speed
+##################################################################################
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    def getSpeed(self):
+        inputJson = cherrypy.request.json
+        filters  = self.getFilters(inputJson)
+        features = inputJson['path']['features']
+
+        formatted = ''
+        count = 0
+        for f in features:
+            cursor = self.getRecords(f, filters[:])
+            records = list(cursor)
+            avgSpeedPerLine = self.computeAvgSpeedPerLine(records)
+            formatted += '\n'.join("%d,%s,%f"%(count,l,avgSpeedPerLine[l]) for l in avgSpeedPerLine)
+            count+=1
 
         cherrypy.response.headers['Content-Type']        = 'text/csv'
         cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
