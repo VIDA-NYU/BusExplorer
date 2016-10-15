@@ -195,8 +195,12 @@ bus.FilterCard = function(){
                     "weight": 4,
                     "opacity": 0.8
                 }
-                bus.map.addGeoJson(JSON.parse(reader.result), "filter", style);
+                
                 path = JSON.parse(reader.result);
+                bus.map.addGeoJson(path, "withoutBuffer", style);
+                path = calculateBuffer(path)
+                bus.map.addGeoJson(path, "filter", style);
+                
             }
         })
 

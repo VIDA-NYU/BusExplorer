@@ -15,6 +15,7 @@ bus.Map = function(){
     exports.paths = {};
     exports.highlightedPaths = {};
     exports.highlightedLines = {};
+    exports.colorPaths = {};
 
     // create a new bus layer
     function createNewBus(render){
@@ -119,6 +120,24 @@ bus.Map = function(){
     exports.onEachFeature = function(feature, layer) {
         // var that = this;
         layer.on({
+            mouseover: function(e) {
+                var style = {
+                    "color": "#00ff00",
+                    "opacity": 0.8
+                };
+                layer.setStyle(style);
+            }
+        });
+        layer.on({
+            mouseout: function(e) {
+                var style = {
+                    "opacity": 0.3,
+                    "color": "#3388FF"
+                };
+                layer.setStyle(style);
+            }
+        });
+        layer.on({
             click: function(e) {
                 bus.map.clickedFeature(e,feature,layer);
 
@@ -174,6 +193,7 @@ bus.Map = function(){
                 // add new feature to highlighted selection
                 var style = {
                     "color": "#ff0000",
+                    "weight": 6,
                 };
                 var aux = L.geoJSON(newFeature, {
                     style: style
@@ -184,12 +204,17 @@ bus.Map = function(){
         });
     };
 
+    exports.addColorPaths = function(){
+
+    };
+
     exports.addGeoJson = function(geojson, name, style){
         
         if(style == undefined) {
             style = {
                 "weight": 8,
-                "opacity": 0.2
+                "opacity": 0.2,
+                "color": "#3388FF"
             };
         }
 
@@ -199,7 +224,6 @@ bus.Map = function(){
         }).addTo(map);
         geo.bringToBack();
         bus.map.paths[name] = geo;
-        console.log(geojson);
     };
 
     exports.removeGeoJSON = function(name){
@@ -222,17 +246,23 @@ bus.Map = function(){
     };
 
     exports.showSpeed = function(json) {
-        console.log(json);
-        var count = 0;
-        for(p in bus.map.paths) {
-            var avgSpeed = 0;
-            for(var l in json[count]) {
-                avgSpeed += json[count][l];
-            }
-            avgSpeed = avgSpeed / (Object.keys(json[count]).length);
-            bus.map.paths[p].setStyle({color: colorScale.getHexColor(avgSpeed)});
-            count++;
-        }
+        // console.log(json);
+        // var count = 0;
+        // for(p in bus.map.paths) {
+        //     var avgSpeed = 0;
+        //     for(var l in json[count]) {
+        //         avgSpeed += json[count][l];
+        //     }
+        //     avgSpeed = avgSpeed / (Object.keys(json[count]).length);
+        //     console.log(avgSpeed, colorScale.getHexColor(avgSpeed));
+        //     bus.map.paths[p].setStyle({color: colorScale.getHexColor(avgSpeed)});
+        //     count++;
+        // }
+        bus.map.paths['withoutBuffer'].eachLayer(function(layer) {
+            var value = Math.random();
+            layer.setStyle({color: colorScale.getHexColor(value)});
+        });
+
     }
 
     exports.removeLine = function(lineName){

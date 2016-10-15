@@ -59,7 +59,7 @@ bus.ColorScale = function(){
 
     exports.getHexColor = function(val, isDiv) {
         var rgb = getColor(val, isDiv);
-        return "#" + componentToHex(rgb[0]) + componentToHex(rgb[1]) + componentToHex(rgb[2]);
+        return "#" + componentToHex(Math.floor(rgb[0])) + componentToHex(Math.floor(rgb[1])) + componentToHex(Math.floor(rgb[2]));
     };
 
     // Threejs color
