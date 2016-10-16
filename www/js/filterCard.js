@@ -212,11 +212,11 @@ bus.FilterCard = function(){
     }
 
     // selects the property
-    function exportPingSelector(propId){
+    function exportPingCSVSelector(propId){
         var buttonId = "pingSelector";
 
         var dropClass = propId==0?"":"leftSpace";
-        var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export pings", dropClass);
+        var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export pings csv", dropClass);
         // add callback
         btn.on("click", function(){
             $("#pingSelector").button("loading");
@@ -227,11 +227,11 @@ bus.FilterCard = function(){
         });
     }
 
-    function exportAggregationSelector(propId){
+    function exportTripCSVSelector(propId){
         var buttonId = "tripSelector";
 
         var dropClass = propId==0?"":"leftSpace";
-        var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export trips", dropClass);
+        var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export trips csv", dropClass);
 
         // add callback
         btn.on("click", function(){
@@ -243,11 +243,11 @@ bus.FilterCard = function(){
         });
     }
 
-    function exportSpeedSelector(propId){
+    function exportSpeedCSVSelector(propId){
         var buttonId = "exportSpeedSelector";
 
         var dropClass = propId==0?"":"topSpace";
-        var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export speed", dropClass);
+        var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export speed csv", dropClass);
         // add callback
         btn.on("click", function(){
             $("#exportSpeedSelector").button("loading");
@@ -255,6 +255,22 @@ bus.FilterCard = function(){
                 $("#exportSpeedSelector").button("reset");
             }
             bus.db.getSpeed(callAfter);
+        });
+    }
+
+    function exportSpeedGeoJSONSelector(propId){
+        var buttonId = "exportSpeedGeoJSONSelector";
+
+        var dropClass = propId==0?"":"topSpace";
+        var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export speed GeoJSON", dropClass);
+        // add callback
+        btn.on("click", function(){
+            $("#exportSpeedGeoJSONSelector").button("loading");
+
+            if(bus.map.paths['withoutBuffer'] != undefined) {
+                download(JSON.stringify(bus.map.paths['withoutBuffer'].toGeoJSON()), 'geo.json', 'text/plain');
+            }
+            $("#exportSpeedGeoJSONSelector").button("reset");
         });
     }
 
@@ -296,10 +312,11 @@ bus.FilterCard = function(){
         idSelector(0);
         lineSelector(0);
         pathSelector(0);
-        exportPingSelector(0);
-        exportAggregationSelector(1);
-        exportSpeedSelector(1);
+        exportPingCSVSelector(0);
+        exportTripCSVSelector(1);
+        exportSpeedCSVSelector(1);
         showSpeedSelector(1);
+        exportSpeedGeoJSONSelector(1);
 
     };
 

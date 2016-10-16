@@ -40,7 +40,6 @@ bus.Map = function(){
     exports.paths = {};
     exports.highlightedPaths = {};
     exports.highlightedLines = {};
-    exports.colorPaths = {};
 
     // create a new bus layer
     function createNewBus(render){
@@ -217,10 +216,6 @@ bus.Map = function(){
         });
     };
 
-    exports.addColorPaths = function(){
-
-    };
-
     exports.addGeoJson = function(geojson, name, enableEachFeature){
 
         if(enableEachFeature == undefined) enableEachFeature = true;
@@ -302,9 +297,11 @@ bus.Map = function(){
                     value += json[count][l];
                 }
                 value = value / numLines;
-                console.log(value, getColor(value));
+                console.log(layer, value, getColor(value));
                 layer.setStyle(styleSpeed);
                 layer.setStyle({color: getColor(value)});
+                layer.feature.properties.speeds = json[count];
+                layer.feature.style = {color: getColor(value)};
 
                 var customOptions = {
                     'maxHeight': 500,
@@ -368,7 +365,22 @@ bus.Map = function(){
             }
         }
         return featureGroup.toGeoJSON();
-    }
+    };
+
+    exports.saveImage = function() {
+        var savingImage = true;
+        var zoom = map.getZoom();
+        var center = map.getCenter();
+        map.setView(center, zoom, {reset: true});
+        map.setZoom(zoom);
+        
+        var doImage = function(err, canvas) {
+            var image = canvas.toDataURL("image/png");
+            downloadImage(image);
+        }
+        leafletImage(map, doImage);
+        
+    };
 
     // map creation
     exports.createMap = function(){
@@ -400,12 +412,13 @@ bus.Map = function(){
         var mapId = 2;
 
         var options = {
-            center: [40.7127, -74.0059],
+            center: [40.7829, -73.9654],
             zoom  : 13,
             bounds: L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180)),
             layers: [L.tileLayer(maps[mapId][0], maps[mapId][1])],
-            closePopupOnClick : false,
+            closePopupOnClick : true,
             zoomControl : false,
+            preferCanvas: true
         };
 
         map = L.map(container, options);

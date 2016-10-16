@@ -79,30 +79,16 @@ bus.Ui = function() {
     }
 
     // creates the add cart button
-    // function addExportCard(parentDiv){
-    //     var buttonId = "addExportCard";
+    function addExportCard(parentDiv){
+        var buttonId = "addExportCard";
 
-    //     // adds the button
-    //     var btn = bus.UiParts.Button(parentDiv,buttonId, "glyphicon glyphicon-floppy-disk","leftSpace");
+        // adds the button
+        var btn = bus.UiParts.Button(parentDiv,buttonId, "glyphicon glyphicon-floppy-disk","leftSpace");
 
-    //     btn.on('click', function(){
-
-    //         if(bus.exportCard != null) {
-    //             bus.exportCard.closeCard();
-    //             bus.exportCard = null;
-    //             return;
-    //         }
-
-
-    //         // increments the number of active cards
-    //         bus.globalCardId += 1;
-
-    //         // creates a new card
-    //         bus.exportCard = new bus.ExportCard();
-    //         // creates the card
-    //         bus.exportCard.initCard(true);
-    //     });
-    // }
+        btn.on('click', function(){
+            bus.map.saveImage();
+        });
+    }
 
     // creates the path Selector
     function pathSelector(parentDiv){
@@ -264,7 +250,7 @@ bus.Ui = function() {
         // creates the add filter button
         addFilterCard(mainMenu);
         // creates the add filter button
-        // addExportCard(mainMenu);
+        addExportCard(mainMenu);
         // creates the bus selector
         pathSelector(mainMenu);
         lineSelector(mainMenu);
