@@ -110,6 +110,22 @@ bus.UiParts.Slider = function(parentDiv, pickerId){
     return div;
 };
 
+bus.UiParts.CheckBox = function(parentDiv, checkboxId, checkboxClass, text){
+    // button div element
+    var checkboxDiv = parentDiv.append("div")
+        .classed("checkbox", true)
+        .attr("id", checkboxId);
+
+    // button left space
+    if(checkboxClass)
+        checkboxDiv.classed(checkboxClass, true);
+
+    var label = checkboxDiv.append("label").html("<input type=\"checkbox\" checked=\"checked\">"+text);
+
+    // returns the element
+    return checkboxDiv;
+};
+
 bus.UiParts.InputFilter = function(parentDiv, filterId){
 
     var div = parentDiv.append("input")

@@ -4,12 +4,12 @@
 #
 */
 
-calculateBuffer = function(geoJSON) {
+var calculateBuffer = function(geoJSON) {
     var buffer = turf.buffer(geoJSON, 0.05, 'kilometers');
     return buffer;
 };
 
-function download(text, name, type) {
+var download = function(text, name, type) {
     if (navigator.msSaveBlob)
     {
       var blob = new Blob([text],{type: type});

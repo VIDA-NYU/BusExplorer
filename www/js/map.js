@@ -5,6 +5,31 @@
 */
 
 bus.Map = function(){
+    // path styles
+    var styleOnMouseOver = {
+        "color": "#00ff00",
+        "opacity": 0.8,
+        "fillOpacity": 0.8,
+    };
+    var styleDefault = {
+        "opacity": 0.3,
+        "fillOpacity": 0.3,
+        "color": "#3388FF"
+    };
+    var styleHighlighted = {
+        "color": "#ff0000",
+        "weight": 6,
+    };
+    var styleHide = {
+        "fillOpacity": 0,
+        "opacity": 0
+    };
+    var styleSpeed = {
+        "fillOpacity": 1,
+        "opacity": 1,
+        "weight": 6,
+    };
+
     // map object
     var map = undefined;
     var thr = undefined;
@@ -121,20 +146,12 @@ bus.Map = function(){
         // var that = this;
         layer.on({
             mouseover: function(e) {
-                var style = {
-                    "color": "#00ff00",
-                    "opacity": 0.8
-                };
-                layer.setStyle(style);
+                layer.setStyle(styleOnMouseOver);
             }
         });
         layer.on({
             mouseout: function(e) {
-                var style = {
-                    "opacity": 0.3,
-                    "color": "#3388FF"
-                };
-                layer.setStyle(style);
+                layer.setStyle(styleDefault);
             }
         });
         layer.on({
@@ -191,12 +208,8 @@ bus.Map = function(){
                 }                
                 
                 // add new feature to highlighted selection
-                var style = {
-                    "color": "#ff0000",
-                    "weight": 6,
-                };
                 var aux = L.geoJSON(newFeature, {
-                    style: style
+                    style: styleHighlighted
                 }).addTo(map);
                 var key = Object.keys(bus.map.highlightedPaths).length;
                 bus.map.highlightedPaths[key] = aux;
@@ -208,22 +221,25 @@ bus.Map = function(){
 
     };
 
-    exports.addGeoJson = function(geojson, name, style){
-        
-        if(style == undefined) {
-            style = {
-                "weight": 8,
-                "opacity": 0.2,
-                "color": "#3388FF"
-            };
-        }
+    exports.addGeoJson = function(geojson, name, enableEachFeature){
 
-        var geo = L.geoJSON(geojson, {
-            onEachFeature: bus.map.onEachFeature,
-            style: style
-        }).addTo(map);
-        geo.bringToBack();
-        bus.map.paths[name] = geo;
+        if(enableEachFeature == undefined) enableEachFeature = true;
+
+        if(enableEachFeature) {
+            var geo = L.geoJSON(geojson, {
+                onEachFeature: bus.map.onEachFeature,
+                style: styleDefault
+            }).addTo(map);
+            geo.bringToBack();
+            bus.map.paths[name] = geo;
+        }
+        else {
+            var geo = L.geoJSON(geojson, {
+                style: styleDefault
+            }).addTo(map);
+            geo.bringToBack();
+            bus.map.paths[name] = geo;
+        }
     };
 
     exports.removeGeoJSON = function(name){
@@ -233,20 +249,38 @@ bus.Map = function(){
     };
 
     exports.addLine = function(geojson, lineName){
-        var style = {
-            "color": "#ff0000",
-        };
 
         var line = L.geoJSON(geojson, {
             filter: bus.map.filterByLine,
-            style: style
+            style: styleHighlighted
         }).addTo(map);
         line.bringToFront();
         bus.map.highlightedLines[lineName] = line;
     };
 
+    function getColor(value) {
+        value = value / 80.0;
+        if(value > 0)
+            color = colorScale.getHexColor(value);
+        else
+            color = '#000000';
+        return color;
+    }
+
+    function jsonToText(json, value) {
+        value = Math.round(value * 100) / 100;
+        var text = ("<b>Avg:</b> <div style=\"color:"+getColor(value)+"\">"+value+" km/h</div>");
+        for(var l in json) {
+            var aux = Math.round(json[l] * 100) / 100;
+            var color = getColor(aux);
+            
+            text += ("<b>"+l+":</b> <div style=\"color:"+color+"\">"+aux+" km/h</div>"); 
+        }
+        return text;
+    };
+
     exports.showSpeed = function(json) {
-        // console.log(json);
+        console.log(json);
         // var count = 0;
         // for(p in bus.map.paths) {
         //     var avgSpeed = 0;
@@ -258,11 +292,46 @@ bus.Map = function(){
         //     bus.map.paths[p].setStyle({color: colorScale.getHexColor(avgSpeed)});
         //     count++;
         // }
+        var count = 0;
         bus.map.paths['withoutBuffer'].eachLayer(function(layer) {
-            var value = Math.random();
-            layer.setStyle({color: colorScale.getHexColor(value)});
-        });
+            // var value = Math.random();
+            var value = 0;
+            var numLines = Object.keys(json[count]).length;
+            if(numLines > 0) {
+                for(var l in json[count]) {
+                    value += json[count][l];
+                }
+                value = value / numLines;
+                console.log(value, getColor(value));
+                layer.setStyle(styleSpeed);
+                layer.setStyle({color: getColor(value)});
 
+                var customOptions = {
+                    'maxHeight': 500,
+                    'closeOnClick': true
+                }
+                layer.bindPopup(jsonToText(json[count], value),customOptions);
+                count++;  
+            }
+            else {
+                layer.setStyle(styleSpeed);
+                layer.setStyle({color: "#FFFFFF"});
+                count++;  
+            }
+            
+        });
+    }
+
+    exports.showFilterBuffer = function(show) {
+        if(bus.map.paths["filter"] == undefined)
+            return;
+
+        if(show) {
+            bus.map.paths["filter"].setStyle(styleDefault);
+        }
+        else {
+            bus.map.paths["filter"].setStyle(styleHide);
+        }
     }
 
     exports.removeLine = function(lineName){

@@ -191,23 +191,24 @@ bus.FilterCard = function(){
             var reader = new FileReader();
             reader.readAsText(this.files[0]);
             reader.onload = function() {
-                var style = {
-                    "weight": 4,
-                    "opacity": 0.8
-                }
                 
                 path = JSON.parse(reader.result);
-                bus.map.addGeoJson(path, "withoutBuffer", style);
+                bus.map.addGeoJson(path, "withoutBuffer", false);
                 path = calculateBuffer(path)
-                bus.map.addGeoJson(path, "filter", style);
+                bus.map.addGeoJson(path, "filter", false);
                 
             }
         })
 
-        // add callback
-        // btn.on("click", function(){
-        //     upload();
-        // });
+        var checkbox = bus.UiParts.CheckBox(cardDiv, "filterCheckbox", dropClass, "Show filter buffer");
+        $("#filterCheckbox").change(function () {
+            if ($("#filterCheckbox").find("input").is(":checked")) {
+                bus.map.showFilterBuffer(true);
+            } else {
+                bus.map.showFilterBuffer(false);
+            }
+        });
+
     }
 
     // selects the property
