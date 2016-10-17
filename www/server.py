@@ -253,7 +253,11 @@ class StackMirror():
         for f in features:
             cursor = self.getRecords(f, filters[:])
             records = list(cursor)
-            outputJson[count] = self.computeAvgSpeedPerLine(records)
+            avgSpeedPerLine = self.computeAvgSpeedPerLine(records)
+            outputJson[count] = {}
+            for l in avgSpeedPerLine:
+                if avgSpeedPerLine[l] >= 1.0:
+                    outputJson[count][l] = avgSpeedPerLine[l]
             count+=1
 
         return outputJson
