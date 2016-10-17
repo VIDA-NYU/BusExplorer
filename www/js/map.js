@@ -27,7 +27,12 @@ bus.Map = function(){
     var styleSpeed = {
         "fillOpacity": 1,
         "opacity": 1,
-        "weight": 6,
+        "weight": 8
+    };
+    var styleSpeedHidden = {
+        "fillOpacity": 0.25,
+        "opacity": 0.25,
+        "weight": 4,
     };
 
     // map object
@@ -276,6 +281,22 @@ bus.Map = function(){
             text += ("<b>"+l+":</b> <div style=\"color:"+color+"\">"+aux+" km/h</div>"); 
         }
         return text;
+    };
+
+    exports.highlightSegment = function(segmentId) {
+        if(bus.map.paths['withoutBuffer'] == undefined)
+            return;
+
+        var count = 0;
+        bus.map.paths['withoutBuffer'].eachLayer(function(layer) {
+            if(count == segmentId || segmentId == -1) {
+                layer.setStyle(styleSpeed);
+            }
+            else {
+                layer.setStyle(styleSpeedHidden);
+            }
+            count++
+        });
     };
 
     exports.showSpeed = function(json) {

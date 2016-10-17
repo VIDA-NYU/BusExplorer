@@ -113,7 +113,9 @@ bus.BarChart = function(){
             .attr("width", x1.rangeBand())
             .attr("height", function(d) {return height-y(d);})
             .attr("x", function(d, i) { return x0(i); })
-            .attr("y", function(d) { return y(d); });
+            .attr("y", function(d) { return y(d); })
+            .on("mouseover", function(d,i) {bus.map.highlightSegment(i)})
+            .on("mouseout", function() {bus.map.highlightSegment(-1)});
 
         svg.append("text")
             .text("Avg. speed")
