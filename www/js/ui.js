@@ -261,11 +261,11 @@ bus.Ui = function() {
         var renderMenu = d3.select("#renderMenu");
 
         // creates the add prop button
-        addProperty(renderMenu);
+        // addProperty(renderMenu);
         // creates the pallet
         addColorPallet(renderMenu);
         // creates the bus selector
-        renderFunctionSelector(renderMenu);
+        // renderFunctionSelector(renderMenu);
     }
 
     // creates all menus

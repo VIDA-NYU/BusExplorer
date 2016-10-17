@@ -263,7 +263,7 @@ bus.Map = function(){
     };
 
     function getColor(value) {
-        value = value / 80.0;
+        value = value / 50.0;
         if(value > 0)
             color = colorScale.getHexColor(value);
         else

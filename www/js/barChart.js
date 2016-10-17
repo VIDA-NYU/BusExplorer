@@ -66,7 +66,7 @@ bus.BarChart = function(){
         console.log(data);
 
         var y = d3.scale.linear()
-            .domain([0, 80])
+            .domain([0, 50])
             .range([height, 0]);
 
         var x0 = d3.scale.ordinal()
@@ -126,7 +126,7 @@ bus.BarChart = function(){
             });
 
         svg.append("text")
-            .text("Avg. speed")
+            .text("Avg. speed (mph)")
             .attr("x", 0)
             .attr("y", -margin.top/2)
             .attr("text-anchor", "middle")

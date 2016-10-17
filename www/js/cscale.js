@@ -19,6 +19,10 @@ bus.ColorScale = function(){
                   // [239,101, 72],[215, 48, 31],[179,  0,  0],[127,  0,  0]];
     var seqMap = [[26, 150, 65], [166, 217, 106], [255, 255, 191], [253, 174, 97], [215, 25, 28],[215, 15, 10]];
 
+    var width = 250;
+    var height = 30;
+    var margin = {top: 0, right: 10, bottom: 50, left: 10};
+
     // linear interpolation
     function lerp(a, b, u){
         return (1 - u) * a + u * b;
@@ -75,28 +79,52 @@ bus.ColorScale = function(){
     };
 
     exports.drawColorScale = function(parentDiv){
+
         // dataset
-        var data = d3.range(125);
+        var numBins = 50;
+        var data = d3.range(numBins);
+
+        var x0 = d3.scale.linear()
+            .domain([0, 50])
+            .range([margin.left, width+margin.left]);
+
+        // axis
+        var xAxis = d3.svg.axis()
+            .scale(x0)
+            .orient("bottom");
 
         // creates the quads
-        parentDiv.append("svg")
-            .attr("width",125)
-            .attr("height",30)
+        var svg = parentDiv.append("svg");
+
+        svg.attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
             .attr("id", "cscale")
-            .classed("leftSpace",true)
           .selectAll("rect")
             .data(data)
             .enter()
             .append("rect")
-            .attr("x", function(d,i){ return i; } )
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .attr("x", function(d,i){ return (width/data.length)*i; } )
             .attr("y", 0 )
-            .attr("width", 1)
-            .attr("height", 30)
+            .attr("width", (width/data.length)+1)
+            .attr("height", height)
             .style("fill", function(d) {
-                var c = getColor(d/124);
+                var c = getColor(d/numBins);
                 return d3.rgb(c[0],c[1],c[2]);
             })
             .style("stroke-width", 0);
+
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+
+        svg.append("text")
+            .text("Speed (mph)")
+            .attr("x", width/2)
+            .attr("y", height + margin.top + margin.bottom/1.5)
+            .attr("text-anchor", "middle")
+
     };
 
     // public api

@@ -101,10 +101,11 @@ class StackMirror():
                 else:
                     speedMs = 0
                 speedKh = speedMs * 3.6
+                speedMh = speedKh * 0.621371192
 
                 # print buses[b][i]['PublishedLineName'],p0,p1,dist,(t1-t0).seconds,speedKh
 
-                speedsPerBus[b].append(speedKh)
+                speedsPerBus[b].append(speedMh)
                 lines[b] = buses[b][i]['PublishedLineName']
                 # print b, lines[b], buses[b][i]['DatedVehicleJourneyRef']
 
@@ -127,15 +128,6 @@ class StackMirror():
         # print speedsPerLine
         # print avgSpeedsPerLine
         return avgSpeedsPerLine
-
-##################################################################################
-#### Format records to csv
-##################################################################################
-    def getFormattedLine(self, record):
-        return ("%s,%f,%f,%f,%s,%s,%s,%s,%s,%s,%s,%s")%\
-                (record["OriginRef"],record["Bearing"],record["VehicleLocation"][1],record["VehicleLocation"][0],\
-                 record["VehicleRef"],record["DestinationName"],record["JourneyPatternRef"],record["RecordedAtTime"],\
-                 record["LineRef"],record["PublishedLineName"],record["DatedVehicleJourneyRef"],record["DirectionRef"])
 
 ##################################################################################
 #### Return records
@@ -184,13 +176,22 @@ class StackMirror():
                     lastPing[b] = e['RecordedAtTime']
                     firstPing[b] = e['RecordedAtTime']
 
-        formatted = 'busid,line,direction,firstping,lastping\n'
+        formatted = 'BusID,PublishedLineName,DirectionRef,FirstPing,LastPing\n'
         formatted += ''.join("%s,%s,%d,%s,%s\n"%(b,buses[b][0]['PublishedLineName'],buses[b][0]['DirectionRef'],firstPing[b],lastPing[b]) for b in buses)
 
         cherrypy.response.headers['Content-Type']        = 'text/csv'
         cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
 
         return formatted
+
+##################################################################################
+#### Format records to csv
+##################################################################################
+    def getFormattedLine(self, record):
+        return ("%s,%f,%f,%f,%s,%s,%s,%s,%s,%s,%s,%s")%\
+                (record["OriginRef"],record["Bearing"],record["VehicleLocation"][1],record["VehicleLocation"][0],\
+                 record["VehicleRef"],record["DestinationName"],record["JourneyPatternRef"],record["RecordedAtTime"],\
+                 record["LineRef"],record["PublishedLineName"],record["DatedVehicleJourneyRef"],record["DirectionRef"])
 
 ##################################################################################
 #### Server: return requested pings
@@ -202,7 +203,7 @@ class StackMirror():
         filters  = self.getFilters(inputJson)
         features = inputJson['path']['features']
 
-        formatted = ''
+        formatted = 'OriginRef,Bearing,Latitude,Longitude,VehicleRef,DestinationName,JourneyPatternRef,RecordedAtTime,LineRef,PublishedLineName,DatedVehicleJourneyRef,DirectionRef\n'
         for f in features:
             cursor = self.getRecords(f, filters[:])
             records = list(cursor)
