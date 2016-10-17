@@ -25,44 +25,44 @@ bus.BarChart = function(){
     // creates the dc.js chart
     function createChart(parentDiv,data1,data2){
         // console.log(data1,data2);
-        // var m = 2;
-        // var n = 0;
-        // for(var i=0; i<data1.length; i++) {
-        //     n = Math.max(n,data1[i].segment);
-        // }
-        // for(var i=0; i<data2.length; i++) {
-        //     n = Math.max(n,data2[i].segment);
-        // }
-        // n = n+1;
-
-        // var data = d3.range(m).map(function() {return d3.range(n).map(function(){return 0})});
-        // var count = d3.range(n).map(function(){return 0});
-        // for(var i=0; i<data1.length; i++) {
-        //     var segment = data1[i].segment;
-        //     var avgSpeed = data1[i].avgSpeed;
-        //     data[0][segment]+=avgSpeed;
-        //     count[segment]++;
-        // }
-        // for(var i=0; i<data[0].length; i++) {
-        //     if(count[i] > 0)
-        //         data[0][i] /= count[i];
-        // }
-
-        // count = d3.range(n).map(function(){return 0});
-        // for(var i=0; i<data2.length; i++) {
-        //     var segment = data2[i].segment;
-        //     var avgSpeed = data2[i].avgSpeed;
-        //     data[1][segment]+=avgSpeed;
-        //     count[segment]++;
-        // }
-        // for(var i=0; i<data[1].length; i++) {
-        //     if(count[i] > 0)
-        //         data[1][i] /= count[i];
-        // }
-
         var m = 2;
-        var n = 10;
-        var data = d3.range(m).map(function() { return d3.range(n).map(function(){return 80*Math.random();}); });
+        var n = 0;
+        for(var i=0; i<data1.length; i++) {
+            n = Math.max(n,data1[i].segment);
+        }
+        for(var i=0; i<data2.length; i++) {
+            n = Math.max(n,data2[i].segment);
+        }
+        n = n+1;
+
+        var data = d3.range(m).map(function() {return d3.range(n).map(function(){return 0})});
+        var count = d3.range(n).map(function(){return 0});
+        for(var i=0; i<data1.length; i++) {
+            var segment = data1[i].segment;
+            var avgSpeed = data1[i].avgSpeed;
+            data[0][segment]+=avgSpeed;
+            count[segment]++;
+        }
+        for(var i=0; i<data[0].length; i++) {
+            if(count[i] > 0)
+                data[0][i] /= count[i];
+        }
+
+        count = d3.range(n).map(function(){return 0});
+        for(var i=0; i<data2.length; i++) {
+            var segment = data2[i].segment;
+            var avgSpeed = data2[i].avgSpeed;
+            data[1][segment]+=avgSpeed;
+            count[segment]++;
+        }
+        for(var i=0; i<data[1].length; i++) {
+            if(count[i] > 0)
+                data[1][i] /= count[i];
+        }
+
+        // var m = 2;
+        // var n = 10;
+        // var data = d3.range(m).map(function() { return d3.range(n).map(function(){return 80*Math.random();}); });
         console.log(data);
 
         var y = d3.scale.linear()

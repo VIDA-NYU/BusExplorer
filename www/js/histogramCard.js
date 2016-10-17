@@ -73,7 +73,7 @@ bus.HistogramCard = function(){
         var file1 = bus.UiParts.File(cardDiv,"histogramFileInput1_"+bus.globalCardId,dropClass, "Select file: ");
         var file2 = bus.UiParts.File(cardDiv,"histogramFileInput2_"+bus.globalCardId,dropClass, "Select file: ");
 
-        createChart();
+        // createChart();
 
         $("#histogramFileInput1_"+bus.globalCardId).change(function() {
             var reader = new FileReader();
@@ -88,6 +88,7 @@ bus.HistogramCard = function(){
             }
         });
 
+        d3.select("[for=histogramFileInput2_"+bus.globalCardId+"]").attr("style", "background-color: rgb(255, 127, 14); border-color: rgb(215, 127, 14)")
         $("#histogramFileInput2_"+bus.globalCardId).change(function() {
             var reader = new FileReader();
             reader.readAsText(this.files[0]);
