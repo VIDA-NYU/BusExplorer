@@ -11,8 +11,8 @@ bus.HistogramCard = function(){
     // Divs
     var cardDiv  = undefined;
     var chartDiv = undefined;
-    var file1 = undefined;
-    var file2 = undefined;
+    var data1 = undefined;
+    var data2 = undefined;
 
     // exported api
     var exports = {};
@@ -43,13 +43,27 @@ bus.HistogramCard = function(){
         // erases old json
         clearChart();
 
+        var btn = bus.UiParts.Button(cardDiv,"saveChart", "glyphicon glyphicon-floppy-disk","leftSpace topSpace");
+
         // create chartDiv
         chartDiv = cardDiv.append("div");
         chartDiv.style("padding","5px")
-            .style("margin-top", "15px");
+            .style("margin-top", "0px");
 
-        chart = new bus.Histogram();
-        chart.create(chartDiv,"test",true);
+        chart = new bus.BarChart();
+        chart.create(chartDiv,data1,data2);
+
+        btn.on('click', function(){
+            chart.saveImage();
+        });
+    }
+
+    function parseLine(d) {
+        return {
+                segment: parseInt(d.segment),
+                line: d.line,
+                avgSpeed : parseFloat(d.avgspeed)
+            };
     }
 
     function fileSelector(propId){
@@ -64,10 +78,12 @@ bus.HistogramCard = function(){
             var reader = new FileReader();
             reader.readAsText(this.files[0]);
             reader.onload = function() {
-                file1 = reader.result;
-                if(file1 != undefined && file2 != undefined) {
+                data1 = d3.csv.parse(reader.result, function(d) {
+                    return parseLine(d);
+                });
+                if(data1 != undefined && data2 != undefined) {
                     createChart();
-                }                
+                }
             }
         });
 
@@ -75,8 +91,10 @@ bus.HistogramCard = function(){
             var reader = new FileReader();
             reader.readAsText(this.files[0]);
             reader.onload = function() {
-                file2 = reader.result; 
-                if(file1 != undefined && file2 != undefined) {
+                data2 = d3.csv.parse(reader.result, function(d) {
+                    return parseLine(d);
+                });
+                if(data1 != undefined && data2 != undefined) {
                     createChart();
                 }               
             }

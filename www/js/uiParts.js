@@ -15,7 +15,7 @@ bus.UiParts.Button = function(parentDiv, buttonId, glyph, buttonClass){
 
     // button left space
     if(buttonClass)
-        buttonDiv.classed("leftSpace", true);
+        buttonDiv.classed(buttonClass, true);
 
     // icon element
     buttonDiv.append("span")

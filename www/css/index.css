@@ -50,7 +50,7 @@ html, body, #gmaps {
 
 .card{
     width: 400px;
-    height: 250px;
+    height: 370px;
     margin-bottom: 5px;
 }
 
@@ -102,7 +102,17 @@ html, body, #gmaps {
     float:right;
 }
 
-.x.axis text {
-    text-anchor: end !important;
-    transform: rotate(-45deg);
+.axis text {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.y.axis g {
+  display: inline;
 }

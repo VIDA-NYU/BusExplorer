@@ -180,6 +180,7 @@ class StackMirror():
                     lastPing[b] = e['RecordedAtTime']
                     firstPing[b] = e['RecordedAtTime']
 
+        formatted = 'busid,line,firstping,lastping\n'
         formatted = '\n'.join("%s,%s,%s,%s"%(b,buses[b][0]['PublishedLineName'],firstPing[b],lastPing[b]) for b in buses)
 
         cherrypy.response.headers['Content-Type']        = 'text/csv'
@@ -219,13 +220,13 @@ class StackMirror():
         filters  = self.getFilters(inputJson)
         features = inputJson['path']['features']
 
-        formatted = ''
+        formatted = 'segment,line,avgspeed\n'
         count = 0
         for f in features:
             cursor = self.getRecords(f, filters[:])
             records = list(cursor)
             avgSpeedPerLine = self.computeAvgSpeedPerLine(records)
-            print "============"+str(count)+"============="
+            # print "============"+str(count)+"============="
             for l in avgSpeedPerLine:
                 if avgSpeedPerLine[l] >= 1.0:
                     formatted += "%d,%s,%f\n"%(count,l,avgSpeedPerLine[l])
