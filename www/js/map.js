@@ -266,9 +266,9 @@ bus.Map = function(){
         return color;
     }
 
-    function jsonToText(json, value) {
+    function popupContent(segmentId, json, value) {
         value = Math.round(value * 100) / 100;
-        var text = ("<b>Avg:</b> <div style=\"color:"+getColor(value)+"\">"+value+" km/h</div>");
+        var text = ("<b>Segment "+segmentId+"<br>Avg:</b> <div style=\"color:"+getColor(value)+"\">"+value+" km/h</div>");
         for(var l in json) {
             var aux = Math.round(json[l] * 100) / 100;
             var color = getColor(aux);
@@ -311,7 +311,7 @@ bus.Map = function(){
                     'maxHeight': 500,
                     'closeOnClick': true
                 }
-                layer.bindPopup(jsonToText(json[count], value),customOptions);
+                layer.bindPopup(popupContent(count, json[count], value),customOptions);
                 count++;  
             }
             else {
