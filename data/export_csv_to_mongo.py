@@ -39,7 +39,7 @@ def readFile(fileName, numLines, dbName, collectionName, erase):
 
         lineRef = tokens[1]
         originRef = tokens[2]
-        directionRef = tokens[3]
+        directionRef = int(tokens[3])
         vehicleRef = tokens[4]
         destinationName = tokens[5]
         bearing = float(tokens[6])

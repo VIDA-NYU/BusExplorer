@@ -51,6 +51,10 @@ class StackMirror():
         if(year != -1):
             filters.append({"year": year})
 
+        direction = json['direction']
+        if(direction != -1):
+            filters.append({"DirectionRef": direction})
+
         lines = json['lines'].split(',')
         if(len(lines) > 0 and lines[0] != ''):
             filters.append({"PublishedLineName" : {'$in' : lines }})
@@ -180,8 +184,8 @@ class StackMirror():
                     lastPing[b] = e['RecordedAtTime']
                     firstPing[b] = e['RecordedAtTime']
 
-        formatted = 'busid,line,firstping,lastping\n'
-        formatted = ''.join("%s,%s,%s,%s\n"%(b,buses[b][0]['PublishedLineName'],firstPing[b],lastPing[b]) for b in buses)
+        formatted = 'busid,line,direction,firstping,lastping\n'
+        formatted += ''.join("%s,%s,%d,%s,%s\n"%(b,buses[b][0]['PublishedLineName'],buses[b][0]['DirectionRef'],firstPing[b],lastPing[b]) for b in buses)
 
         cherrypy.response.headers['Content-Type']        = 'text/csv'
         cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'

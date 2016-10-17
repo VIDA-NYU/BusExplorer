@@ -21,6 +21,7 @@ bus.Db = function (){
 			endHour:bus.filterCard.getEndHour(),
 			ids:bus.filterCard.getIds(),
 			lines:bus.filterCard.getLines(),
+            direction:bus.filterCard.getDirection(),
 			path:bus.filterCard.getPath()
         };
         return data;

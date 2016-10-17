@@ -45,7 +45,7 @@ bus.FilterCard = function(){
         var dropClass = propId==0?"":"leftSpace";
         var day = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Day of week: ");
         var dayDrop = bus.UiParts.DropDown(cardDiv,dropId,dropClass);
-        cardDiv.append("br");
+        // cardDiv.append("br");
 
         // gets the list
         var ul = dayDrop.select("ul");
@@ -74,7 +74,7 @@ bus.FilterCard = function(){
         var dropClass = propId==0?"":"leftSpace";
         var month = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Month: ");
         var monthDrop = bus.UiParts.DropDown(cardDiv,dropId,dropClass);
-        cardDiv.append("br");
+        // cardDiv.append("br");
 
         // gets the list
         var ul = monthDrop.select("ul");
@@ -103,7 +103,7 @@ bus.FilterCard = function(){
         var dropClass = propId==0?"":"leftSpace";
         var year = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Year: ");
         var yearDrop = bus.UiParts.DropDown(cardDiv,dropId,dropClass);
-        cardDiv.append("br");
+        // cardDiv.append("br");
 
         // gets the list
         var ul = yearDrop.select("ul");
@@ -125,6 +125,34 @@ bus.FilterCard = function(){
             });
     }
 
+    function directionSelector(propId){
+        var dropId = "directionSelector";
+
+        // adds the drop down
+        var dropClass = propId==0?"":"leftSpace";
+        var direction = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Direction: ");
+        var directionDrop = bus.UiParts.DropDown(cardDiv,dropId,dropClass);
+
+        // gets the list
+        var ul = directionDrop.select("ul");
+        // sets the button label
+        directionDrop.select("button").html("All");
+
+        // binds json to items and appends
+        ul.selectAll("li")
+            .data(["All"].concat([0,1]))
+            .enter()
+            .append('li')
+            .html(function(d) { return '<a href="#">' + d + '</a>'; });
+
+        ul.selectAll("li")
+            .on('click', function(d){
+                directionDrop.select('button').html(d);
+                // updates the selected function
+                bus.selectedProperties[dropId] = d;
+            });
+    }
+
     function hourSelector(propId){
         var dropId = "hourSelector";
 
@@ -132,7 +160,7 @@ bus.FilterCard = function(){
         var dropClass = propId==0?"":"leftSpace";
         var start = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Hours: ");
         var startPicker = bus.UiParts.Slider(cardDiv,"picker");
-        cardDiv.append("br");
+        // cardDiv.append("br");
     }
 
     function idSelector(propId){
@@ -142,7 +170,7 @@ bus.FilterCard = function(){
         var dropClass = propId==0?"":"leftSpace";
         var line = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Filter by bus id: ");
         var linePicker = bus.UiParts.InputFilter(cardDiv,"ids");
-        cardDiv.append("br");
+        // cardDiv.append("br");
     }
 
     function lineSelector(propId){
@@ -318,6 +346,7 @@ bus.FilterCard = function(){
         daySelector(0);
         monthSelector(0);
         yearSelector(0);
+        directionSelector(0);
         hourSelector(0);
         idSelector(0);
         lineSelector(0);
@@ -365,6 +394,13 @@ bus.FilterCard = function(){
         if(year === "All")
             return -1;
         return parseInt(year);
+    };
+
+    exports.getDirection = function(){
+        var dir = $("#directionSelector").children("button").text();
+        if(dir === "All")
+            return -1;
+        return parseInt(dir);
     };
 
     exports.getStartHour = function(){

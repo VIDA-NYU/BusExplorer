@@ -83,7 +83,7 @@ bus.UiParts.SimpleText = function(parentDiv, textId, textClass, text){
 
     // creates the drop down
     textDiv.append("text");
-    textDiv.append("br");
+    // textDiv.append("br");
 
     // returns the element
     return textDiv;
