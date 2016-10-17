@@ -181,7 +181,7 @@ class StackMirror():
                     firstPing[b] = e['RecordedAtTime']
 
         formatted = 'busid,line,firstping,lastping\n'
-        formatted = '\n'.join("%s,%s,%s,%s"%(b,buses[b][0]['PublishedLineName'],firstPing[b],lastPing[b]) for b in buses)
+        formatted = ''.join("%s,%s,%s,%s\n"%(b,buses[b][0]['PublishedLineName'],firstPing[b],lastPing[b]) for b in buses)
 
         cherrypy.response.headers['Content-Type']        = 'text/csv'
         cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
@@ -202,7 +202,7 @@ class StackMirror():
         for f in features:
             cursor = self.getRecords(f, filters[:])
             records = list(cursor)
-            formatted += '\n'.join(self.getFormattedLine(records[n]) for n in xrange(len(records)))
+            formatted += ''.join(self.getFormattedLine(records[n])+'\n' for n in xrange(len(records)))
 
         cherrypy.response.headers['Content-Type']        = 'text/csv'
         cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'

@@ -12,6 +12,7 @@ bus.HistogramCard = function(){
     var cardDiv  = undefined;
     var chartDiv = undefined;
     var data1 = undefined;
+    var saveBtn = undefined;
     var data2 = undefined;
 
     // exported api
@@ -42,7 +43,8 @@ bus.HistogramCard = function(){
         // erases old json
         clearChart();
 
-        var btn = bus.UiParts.Button(cardDiv,"saveChart", "glyphicon glyphicon-floppy-disk","leftSpace topSpace");
+        if(saveBtn == undefined)
+            saveBtn = bus.UiParts.Button(cardDiv,"saveChart", "glyphicon glyphicon-floppy-disk","leftSpace topSpace");
 
         // create chartDiv
         chartDiv = cardDiv.append("div");
@@ -52,7 +54,7 @@ bus.HistogramCard = function(){
         chart = new bus.BarChart();
         chart.create(chartDiv,data1,data2);
 
-        btn.on('click', function(){
+        saveBtn.on('click', function(){
             chart.saveImage();
         });
     }
