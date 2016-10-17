@@ -114,8 +114,16 @@ bus.BarChart = function(){
             .attr("height", function(d) {return height-y(d);})
             .attr("x", function(d, i) { return x0(i); })
             .attr("y", function(d) { return y(d); })
-            .on("mouseover", function(d,i) {bus.map.highlightSegment(i)})
-            .on("mouseout", function() {bus.map.highlightSegment(-1)});
+            .on("mouseover", function(d,i) {
+                if(bus.map.highlightSegment(i)) {
+                    svg.selectAll("rect").style("opacity",0.5);
+                    d3.select(this).style("opacity",1.0);
+                }
+            })
+            .on("mouseout", function() {
+                svg.selectAll("rect").style("opacity",1.0);
+                bus.map.highlightSegment(-1);
+            });
 
         svg.append("text")
             .text("Avg. speed")

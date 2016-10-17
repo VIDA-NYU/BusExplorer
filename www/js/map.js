@@ -285,7 +285,7 @@ bus.Map = function(){
 
     exports.highlightSegment = function(segmentId) {
         if(bus.map.paths['withoutBuffer'] == undefined)
-            return;
+            return false;
 
         var count = 0;
         bus.map.paths['withoutBuffer'].eachLayer(function(layer) {
@@ -297,6 +297,7 @@ bus.Map = function(){
             }
             count++
         });
+        return true;
     };
 
     exports.showSpeed = function(json) {
