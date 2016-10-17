@@ -24,42 +24,45 @@ bus.BarChart = function(){
 
     // creates the dc.js chart
     function createChart(parentDiv,data1,data2){
-        console.log(data1,data2);
+        // console.log(data1,data2);
+        // var m = 2;
+        // var n = 0;
+        // for(var i=0; i<data1.length; i++) {
+        //     n = Math.max(n,data1[i].segment);
+        // }
+        // for(var i=0; i<data2.length; i++) {
+        //     n = Math.max(n,data2[i].segment);
+        // }
+        // n = n+1;
+
+        // var data = d3.range(m).map(function() {return d3.range(n).map(function(){return 0})});
+        // var count = d3.range(n).map(function(){return 0});
+        // for(var i=0; i<data1.length; i++) {
+        //     var segment = data1[i].segment;
+        //     var avgSpeed = data1[i].avgSpeed;
+        //     data[0][segment]+=avgSpeed;
+        //     count[segment]++;
+        // }
+        // for(var i=0; i<data[0].length; i++) {
+        //     if(count[i] > 0)
+        //         data[0][i] /= count[i];
+        // }
+
+        // count = d3.range(n).map(function(){return 0});
+        // for(var i=0; i<data2.length; i++) {
+        //     var segment = data2[i].segment;
+        //     var avgSpeed = data2[i].avgSpeed;
+        //     data[1][segment]+=avgSpeed;
+        //     count[segment]++;
+        // }
+        // for(var i=0; i<data[1].length; i++) {
+        //     if(count[i] > 0)
+        //         data[1][i] /= count[i];
+        // }
+
         var m = 2;
-        var n = 0;
-        for(var i=0; i<data1.length; i++) {
-            n = Math.max(n,data1[i].segment);
-        }
-        for(var i=0; i<data2.length; i++) {
-            n = Math.max(n,data2[i].segment);
-        }
-        n = n+1;
-
-        var data = d3.range(m).map(function() {return d3.range(n).map(function(){return 0})});
-        var count = d3.range(n).map(function(){return 0});
-        for(var i=0; i<data1.length; i++) {
-            var segment = data1[i].segment;
-            var avgSpeed = data1[i].avgSpeed;
-            data[0][segment]+=avgSpeed;
-            count[segment]++;
-        }
-        for(var i=0; i<data[0].length; i++) {
-            if(count[i] > 0)
-                data[0][i] /= count[i];
-        }
-
-        count = d3.range(n).map(function(){return 0});
-        for(var i=0; i<data2.length; i++) {
-            var segment = data2[i].segment;
-            var avgSpeed = data2[i].avgSpeed;
-            data[1][segment]+=avgSpeed;
-            count[segment]++;
-        }
-        for(var i=0; i<data[1].length; i++) {
-            if(count[i] > 0)
-                data[1][i] /= count[i];
-        }
-        // var data = d3.range(m).map(function() { return d3.range(n).map(function(){return 80*Math.random();}); });
+        var n = 10;
+        var data = d3.range(m).map(function() { return d3.range(n).map(function(){return 80*Math.random();}); });
         console.log(data);
 
         var y = d3.scale.linear()
@@ -111,6 +114,24 @@ bus.BarChart = function(){
             .attr("height", function(d) {return height-y(d);})
             .attr("x", function(d, i) { return x0(i); })
             .attr("y", function(d) { return y(d); });
+
+        svg.append("text")
+            .text("Avg. speed")
+            .attr("x", 0)
+            .attr("y", -margin.top/2)
+            .attr("text-anchor", "middle")
+
+        svg.append("text")
+            .text("Segments")
+            .attr("x", width/2)
+            .attr("y", height + margin.top + margin.bottom/4)
+            .attr("text-anchor", "middle")
+
+        // in order for saveImage to work, style must be in the element itself, and not inhereted
+        // svg.selectAll("path").attr("style", "fill: none; stroke: #0000");
+        // svg.selectAll(".y axis").selectAll("text").attr("style", "font: 12px sans-serif; text-anchor: end;");
+        // svg.selectAll(".x axis").selectAll("text").attr("style", "font: 12px sans-serif; text-anchor: middle;");
+        svg.append("defs").append("style").attr("type", "text/css").text("path {fill: none; stroke: #000000} text {font: 12px sans-serif}");
     }
 
     exports.saveImage = function(){
