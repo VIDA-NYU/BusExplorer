@@ -24,7 +24,6 @@ bus.HistogramCard = function(){
 
         // erase chart
         if(chart){
-            chart.disposeDimension();
             chart = undefined;
         }
     }
@@ -71,10 +70,10 @@ bus.HistogramCard = function(){
 
         var dropClass = propId==0?"":"leftSpace";
 
-        var file1 = bus.UiParts.File(cardDiv,"histogramFileInput1",dropClass, "Select file: ");
-        var file2 = bus.UiParts.File(cardDiv,"histogramFileInput2",dropClass, "Select file: ");
+        var file1 = bus.UiParts.File(cardDiv,"histogramFileInput1_"+bus.globalCardId,dropClass, "Select file: ");
+        var file2 = bus.UiParts.File(cardDiv,"histogramFileInput2_"+bus.globalCardId,dropClass, "Select file: ");
 
-        $("#histogramFileInput1").change(function() {
+        $("#histogramFileInput1_"+bus.globalCardId).change(function() {
             var reader = new FileReader();
             reader.readAsText(this.files[0]);
             reader.onload = function() {
@@ -87,7 +86,7 @@ bus.HistogramCard = function(){
             }
         });
 
-        $("#histogramFileInput2").change(function() {
+        $("#histogramFileInput2_"+bus.globalCardId).change(function() {
             var reader = new FileReader();
             reader.readAsText(this.files[0]);
             reader.onload = function() {

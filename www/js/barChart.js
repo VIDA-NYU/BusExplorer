@@ -36,18 +36,31 @@ bus.BarChart = function(){
         n = n+1;
 
         var data = d3.range(m).map(function() {return d3.range(n).map(function(){return 0})});
+        var count = d3.range(n).map(function(){return 0});
         for(var i=0; i<data1.length; i++) {
             var segment = data1[i].segment;
             var avgSpeed = data1[i].avgSpeed;
             data[0][segment]+=avgSpeed;
+            count[segment]++;
         }
+        for(var i=0; i<data[0].length; i++) {
+            if(count[i] > 0)
+                data[0][i] /= count[i];
+        }
+
+        count = d3.range(n).map(function(){return 0});
         for(var i=0; i<data2.length; i++) {
             var segment = data2[i].segment;
             var avgSpeed = data2[i].avgSpeed;
             data[1][segment]+=avgSpeed;
+            count[segment]++;
         }
+        for(var i=0; i<data[1].length; i++) {
+            if(count[i] > 0)
+                data[1][i] /= count[i];
+        }
+        // var data = d3.range(m).map(function() { return d3.range(n).map(function(){return 80*Math.random();}); });
         console.log(data);
-        // var data = d3.range(m).map(function() { return d3.range(n).map(Math.random); });
 
         var y = d3.scale.linear()
             .domain([0, 80])
@@ -95,9 +108,9 @@ bus.BarChart = function(){
             .data(function(d) { return d; })
           .enter().append("rect")
             .attr("width", x1.rangeBand())
-            .attr("height", y)
+            .attr("height", function(d) {return height-y(d);})
             .attr("x", function(d, i) { return x0(i); })
-            .attr("y", function(d) { return height - y(d); });
+            .attr("y", function(d) { return y(d); });
     }
 
     exports.saveImage = function(){

@@ -282,6 +282,21 @@ bus.FilterCard = function(){
         });
     }
 
+    function closeCardSelector(){
+        var buttonId = "closeCard";
+
+        // adds the button
+        var btn = bus.UiParts.Button(cardDiv, buttonId, "glyphicon glyphicon-remove");
+        // add callback
+        btn.on("click", function(){
+            // clears the chart
+            exports.closeCard();
+            bus.filterCard = null;
+        });
+
+        cardDiv.append("br");
+    }
+
     exports.closeCard = function(){
         bus.map.clearPaths();
         bus.gui.clearPaths();
@@ -296,6 +311,8 @@ bus.FilterCard = function(){
         var mainDiv = d3.select("#cards");
         // creates the card div
         createDiv(mainDiv);
+
+        closeCardSelector();
 
         // card menu
         daySelector(0);

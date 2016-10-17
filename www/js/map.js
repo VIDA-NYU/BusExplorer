@@ -33,6 +33,7 @@ bus.Map = function(){
     // map object
     var map = undefined;
     var thr = undefined;
+    var mouseOver = undefined;
     var colorScale = new bus.ColorScale();
 
     // exported api
@@ -145,7 +146,10 @@ bus.Map = function(){
         // var that = this;
         layer.on({
             mouseover: function(e) {
+                if(mouseOver != undefined)
+                    mouseOver.setStyle(styleDefault);
                 layer.setStyle(styleOnMouseOver);
+                mouseOver = layer;
             }
         });
         layer.on({
