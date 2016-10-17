@@ -126,6 +126,31 @@ bus.UiParts.CheckBox = function(parentDiv, checkboxId, checkboxClass, text){
     return checkboxDiv;
 };
 
+bus.UiParts.File = function(parentDiv, fileId, fileClass, text){
+
+    var textDiv = parentDiv.append("div")
+        .classed("text", true)
+        .attr("id", fileId+"text")
+        .text(text)
+
+    // button left space
+    if(fileClass)
+        textDiv.classed("leftSpace", true);
+
+    // creates the drop down
+    textDiv.append("text");
+    textDiv.append("br");
+
+    var fileDiv = parentDiv.append("input")
+            .attr("type", "file")
+            .attr("id", fileId);
+
+    $("#"+fileId).filestyle({badge: false, buttonName: "btn-primary"});
+
+    // returns the element
+    return fileDiv;
+};
+
 bus.UiParts.InputFilter = function(parentDiv, filterId){
 
     var div = parentDiv.append("input")

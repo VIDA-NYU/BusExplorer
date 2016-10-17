@@ -178,15 +178,8 @@ bus.FilterCard = function(){
 
         // adds the drop down
         var dropClass = propId==0?"":"leftSpace";
-        var line = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Filter by line trajectory: ");
-
-        cardDiv.append("input")
-            .attr("type", "file")
-            .attr("id", "fileInput");
-
-        $("#fileInput").filestyle({badge: false, buttonName: "btn-primary"});
-        cardDiv.append("br");
-
+        var file = bus.UiParts.File(cardDiv,"fileInput",dropClass, "Filter by line trajectory: ");
+        
         $("#fileInput").change(function() {
             var reader = new FileReader();
             reader.readAsText(this.files[0]);
@@ -198,7 +191,7 @@ bus.FilterCard = function(){
                 bus.map.addGeoJson(path, "filter", false);
                 
             }
-        })
+        });
 
         var checkbox = bus.UiParts.CheckBox(cardDiv, "filterCheckbox", dropClass, "Show filter buffer");
         $("#filterCheckbox").change(function () {

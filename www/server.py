@@ -75,13 +75,17 @@ class StackMirror():
             buses[b].sort(key = lambda r : r['RecordedAtTime'])
 
         # Compute speed between successive pings
-        speeds = {}
-        avgSpeeds = {}
+        speedsPerBus = {}
+        lines = {}
+        avgSpeedsPerBus = {}
         for b in buses:
-            speeds[b] = []
+            speedsPerBus[b] = []
             for i in range(1,len(buses[b])):
                 p0 = [buses[b][i-1]['VehicleLocation'][1],buses[b][i-1]['VehicleLocation'][0]] #lat,lon format
                 p1 = [buses[b][i]['VehicleLocation'][1],buses[b][i]['VehicleLocation'][0]]
+
+                if buses[b][i-1]['PublishedLineName'] != buses[b][i]['PublishedLineName']:
+                    print 'Different line names!!'
 
                 dist = distance.distance(p0,p1).meters
 
@@ -94,16 +98,31 @@ class StackMirror():
                     speedMs = 0
                 speedKh = speedMs * 3.6
 
-                print p0,p1,dist,(t1-t0).seconds,speedKh
+                # print buses[b][i]['PublishedLineName'],p0,p1,dist,(t1-t0).seconds,speedKh
 
-                speeds[b].append(speedKh)
+                speedsPerBus[b].append(speedKh)
+                lines[b] = buses[b][i]['PublishedLineName']
+                # print b, lines[b], buses[b][i]['DatedVehicleJourneyRef']
 
-            if len(speeds[b]) > 0:
-                avgSpeeds[b] = sum(speeds[b]) / float(len(speeds[b]))
+        speedsPerLine = {}
+        for b in lines:
+            line = lines[b]
+
+            if line in speedsPerLine:
+                speedsPerLine[line].extend(speedsPerBus[b])
             else:
-                avgSpeeds[b] = 0
+                speedsPerLine[line] = []
+                speedsPerLine[line].extend(speedsPerBus[b])
 
-        return avgSpeeds
+        avgSpeedsPerLine = {}
+        for l in speedsPerLine:
+            if len(speedsPerLine[l]) > 0:
+                avgSpeedsPerLine[l] = sum(speedsPerLine[l]) / float(len(speedsPerLine[l]))
+            else:
+                speedsPerLine[b] = 0
+        # print speedsPerLine
+        # print avgSpeedsPerLine
+        return avgSpeedsPerLine
 
 ##################################################################################
 #### Format records to csv
@@ -206,6 +225,7 @@ class StackMirror():
             cursor = self.getRecords(f, filters[:])
             records = list(cursor)
             avgSpeedPerLine = self.computeAvgSpeedPerLine(records)
+            print "============"+str(count)+"============="
             for l in avgSpeedPerLine:
                 if avgSpeedPerLine[l] >= 1.0:
                     formatted += "%d,%s,%f\n"%(count,l,avgSpeedPerLine[l])

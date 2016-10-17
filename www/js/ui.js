@@ -16,9 +16,6 @@ bus.Ui = function() {
         var btn = bus.UiParts.Button(parentDiv,buttonId, "glyphicon glyphicon-stats");
 
         btn.on('click', function(){
-            // avoid errors
-            if(!Object.keys(bus.loadedDataSet).length)
-                return;
 
             // increments the number of active cards
             bus.globalCardId += 1;
@@ -246,7 +243,7 @@ bus.Ui = function() {
         // creates the add card button
         addHistogramCard(mainMenu);
         // creates the add card button
-        addScatterCard(mainMenu);
+        // addScatterCard(mainMenu);
         // creates the add filter button
         addFilterCard(mainMenu);
         // creates the add filter button

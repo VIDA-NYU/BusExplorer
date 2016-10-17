@@ -11,9 +11,8 @@ bus.HistogramCard = function(){
     // Divs
     var cardDiv  = undefined;
     var chartDiv = undefined;
-
-    // selected property
-    var selectedProperty = undefined;
+    var file1 = undefined;
+    var file2 = undefined;
 
     // exported api
     var exports = {};
@@ -40,7 +39,7 @@ bus.HistogramCard = function(){
     }
 
     // creates the chart
-    function createChart(isLinear){
+    function createChart(){
         // erases old json
         clearChart();
 
@@ -50,42 +49,38 @@ bus.HistogramCard = function(){
             .style("margin-top", "15px");
 
         chart = new bus.Histogram();
-        chart.create(chartDiv,selectedProperty,isLinear);
+        chart.create(chartDiv,"test",true);
     }
 
-    // selects the property
-    function propertySelector(){
+    function fileSelector(propId){
         var dropId = "propSelector";
 
-        // adds the drop down
-        var drop = bus.UiParts.DropDown(cardDiv,dropId);
+        var dropClass = propId==0?"":"leftSpace";
 
-        // gets the list
-        var ul = drop.select("ul");
-        // sets the button label
-        drop.select("button").html("Select one property");
+        var file1 = bus.UiParts.File(cardDiv,"histogramFileInput1",dropClass, "Select file: ");
+        var file2 = bus.UiParts.File(cardDiv,"histogramFileInput2",dropClass, "Select file: ");
 
-        // list of available values
-        var vals = bus.availableFunctionNames[0].concat(bus.availableFunctionNames[1]);
+        $("#histogramFileInput1").change(function() {
+            var reader = new FileReader();
+            reader.readAsText(this.files[0]);
+            reader.onload = function() {
+                file1 = reader.result;
+                if(file1 != undefined && file2 != undefined) {
+                    createChart();
+                }                
+            }
+        });
 
-        // binds json to items and appends
-        ul.selectAll("li")
-            .data(vals)
-            .enter()
-            .append('li')
-            .html(function(d) { return '<a href="#">' + d + '</a>'; });
-
-        // updates the button when selecting an item
-        ul.selectAll("li")
-            .on('click', function(d){
-                drop.select('button').html(d);
-                // updates the selected function
-                selectedProperty = d;
-                var isLinear = (bus.availableFunctionNames[0].indexOf(d)>=0);
-
-                // creates the chart
-                createChart(isLinear);
-            });
+        $("#histogramFileInput2").change(function() {
+            var reader = new FileReader();
+            reader.readAsText(this.files[0]);
+            reader.onload = function() {
+                file2 = reader.result; 
+                if(file1 != undefined && file2 != undefined) {
+                    createChart();
+                }               
+            }
+        });
     }
 
     // closes the card
@@ -101,6 +96,8 @@ bus.HistogramCard = function(){
             // remove the card
             if(cardDiv) cardDiv.remove();
         });
+
+        cardDiv.append("br");
     }
 
     // card creation
@@ -109,11 +106,13 @@ bus.HistogramCard = function(){
         var mainDiv = d3.select("#cards");
         // creates the card div
         createDiv(mainDiv);
-        // card menu
-        propertySelector();
-
         // close card
         closeCard();
+
+        // card menu
+        fileSelector(0);
+
+        
    };
 
     // public api
