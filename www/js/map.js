@@ -11,6 +11,11 @@ bus.Map = function(){
         "opacity": 0.8,
         "fillOpacity": 0.8,
     };
+    var styleRoute = {
+         "opacity": 1.0,
+         "fillOpacity": 1.0,
+         "color": "#ff780f"
+    }
     var styleDefault = {
         "opacity": 0.3,
         "fillOpacity": 0.3,
@@ -219,6 +224,7 @@ bus.Map = function(){
                 var aux = L.geoJSON(newFeature, {
                     style: styleHighlighted
                 }).addTo(map);
+                aux.bringToFront();
                 var key = Object.keys(bus.map.highlightedPaths).length;
                 bus.map.highlightedPaths[key] = aux;
             }
@@ -256,9 +262,9 @@ bus.Map = function(){
 
         var line = L.geoJSON(geojson, {
             filter: bus.map.filterByLine,
-            style: styleHighlighted
+            style: styleRoute
         }).addTo(map);
-        line.bringToFront();
+        line.bringToBack();
         bus.map.highlightedLines[lineName] = line;
     };
 
@@ -383,13 +389,13 @@ bus.Map = function(){
                 aux.addTo(featureGroup);
             }
         }
-        for(var l in bus.map.highlightedLines) {
-            var geojson = bus.map.highlightedLines[l].toGeoJSON();
-            for(var f in geojson.features) {
-                var aux = L.GeoJSON.geometryToLayer(geojson.features[f]);
-                aux.addTo(featureGroup);
-            }
-        }
+        // for(var l in bus.map.highlightedLines) {
+        //     var geojson = bus.map.highlightedLines[l].toGeoJSON();
+        //     for(var f in geojson.features) {
+        //         var aux = L.GeoJSON.geometryToLayer(geojson.features[f]);
+        //         aux.addTo(featureGroup);
+        //     }
+        // }
         return featureGroup.toGeoJSON();
     };
 
