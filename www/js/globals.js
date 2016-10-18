@@ -53,3 +53,5 @@ bus.globalCardId = 0;
 bus.selectedProperties = {};
 bus.filterCard = null;
 bus.exportCard = null;
+
+bus.filterSize = 50;

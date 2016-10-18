@@ -23,7 +23,7 @@ bus.Map = function(){
     };
     var styleHighlighted = {
         "color": "#ff0000",
-        "weight": 6,
+        "weight": 6
     };
     var styleHide = {
         "fillOpacity": 0,
@@ -44,6 +44,7 @@ bus.Map = function(){
     var map = undefined;
     var thr = undefined;
     var mouseOver = undefined;
+    var lastClick = undefined;
     var colorScale = new bus.ColorScale();
 
     // exported api
@@ -51,6 +52,7 @@ bus.Map = function(){
     exports.paths = {};
     exports.highlightedPaths = {};
     exports.highlightedLines = {};
+    exports.selectionMode = "segment";
 
     // create a new bus layer
     function createNewBus(render){
@@ -136,10 +138,71 @@ bus.Map = function(){
         thr.draw();
     };
 
-    exports.clickedFeature = function(e,feature,layer) {
-        // console.log(e);
-        // console.log(feature);
-        // console.log(layer);
+    exports.addSegment = function(e,feature,layer) {
+        // remove selected feature
+        // bus.map.paths.removeLayer(layer);
+
+        var newFeature = {};
+        newFeature.type = "Feature";
+        newFeature.geometry = {}
+        newFeature.geometry.type = "LineString";
+        newFeature.geometry.coordinates = null;
+        // iterate through all coordinates of features.geometry 
+        // until we find the one LineString that we clicked
+        
+
+        if(feature.geometry.type == "LineString") {
+            var minDistance = Infinity;
+            var index = 0;
+
+            var coords = feature.geometry.coordinates;
+            var numCoords = coords.length;
+            for(var j=0; j<numCoords-1; j++) {
+                var distance = L.LineUtil.pointToSegmentDistance( map.project(e.latlng),map.project(L.latLng(coords[j][1],coords[j][0])),map.project(L.latLng(coords[j+1][1],coords[j+1][0])) );
+                if(distance < minDistance) {
+                    minDistance = distance;
+                    index = j;
+                }
+            }
+            newFeature.geometry.coordinates = [feature.geometry.coordinates[index], feature.geometry.coordinates[index+1]];
+        }
+        else if(feature.geometry.type == "MultiLineString") {
+            var minDistance = Infinity;
+            var indexi = 0;
+            var indexj = 0;
+
+            var lines = feature.geometry.coordinates;
+            var numLines = lines.length;
+            for(var i=0; i<numLines; i++) {
+                var coords = lines[i];
+                var numCoords = lines[i].length;
+                for(var j=0; j<numCoords-1; j++) {
+                    var distance = L.LineUtil.pointToSegmentDistance( map.project(e.latlng),map.project(L.latLng(coords[j][1],coords[j][0])),map.project(L.latLng(coords[j+1][1],coords[j+1][0])) );
+                    if(distance < minDistance) {
+                        minDistance = distance;
+                        indexi = i;
+                        indexj = j;
+                    }
+                }
+            }
+            newFeature.geometry.coordinates = [feature.geometry.coordinates[indexi][indexj], feature.geometry.coordinates[indexi][indexj+1]];
+        }                
+        
+        // add new feature to highlighted selection
+        var aux = L.geoJSON(newFeature, {
+            style: styleHighlighted
+        }).addTo(map);
+        aux.bringToFront();
+        var key = Object.keys(bus.map.highlightedPaths).length;
+        bus.map.highlightedPaths[key] = aux;
+    };
+
+    exports.addNode = function(e, feature, layer) {
+
+        var aux = L.circle(e.latlng, bus.filterSize, styleHighlighted).addTo(map);
+        aux.bringToFront();
+        var key = Object.keys(bus.map.highlightedPaths).length;
+        bus.map.highlightedPaths[key] = aux;
     };
 
     exports.filterByLine = function(feature, layer) {
@@ -169,83 +232,55 @@ bus.Map = function(){
         });
         layer.on({
             click: function(e) {
-                bus.map.clickedFeature(e,feature,layer);
-
-                // remove selected feature
-                // bus.map.paths.removeLayer(layer);
-
-                var newFeature = {};
-                newFeature.type = "Feature";
-                newFeature.geometry = {}
-                newFeature.geometry.type = "LineString";
-                newFeature.geometry.coordinates = null;
-                // iterate through all coordinates of features.geometry 
-                // until we find the one LineString that we clicked
                 
-
-                if(feature.geometry.type == "LineString") {
-                    var minDistance = Infinity;
-                    var index = 0;
-
-                    var coords = feature.geometry.coordinates;
-                    var numCoords = coords.length;
-                    for(var j=0; j<numCoords-1; j++) {
-                        var distance = L.LineUtil.pointToSegmentDistance( map.project(e.latlng),map.project(L.latLng(coords[j][1],coords[j][0])),map.project(L.latLng(coords[j+1][1],coords[j+1][0])) );
-                        if(distance < minDistance) {
-                            minDistance = distance;
-                            index = j;
-                        }
+                // avoid click being called twice for same click
+                if(lastClick == undefined || (lastClick.x != e.layerPoint.x && lastClick.y != e.layerPoint.y)) {
+                    if(bus.map.selectionMode === "segment") {
+                        console.log("adding segment");
+                        bus.map.addSegment(e,feature,layer);
                     }
-                    newFeature.geometry.coordinates = [feature.geometry.coordinates[index], feature.geometry.coordinates[index+1]];
+                    else if(bus.map.selectionMode === "node") {
+                        console.log("adding node");
+                        bus.map.addNode(e,feature,layer);
+                    }
+                    lastClick = e.layerPoint;
                 }
-                else if(feature.geometry.type == "MultiLineString") {
-                    var minDistance = Infinity;
-                    var indexi = 0;
-                    var indexj = 0;
 
-                    var lines = feature.geometry.coordinates;
-                    var numLines = lines.length;
-                    for(var i=0; i<numLines; i++) {
-                        var coords = lines[i];
-                        var numCoords = lines[i].length;
-                        for(var j=0; j<numCoords-1; j++) {
-                            var distance = L.LineUtil.pointToSegmentDistance( map.project(e.latlng),map.project(L.latLng(coords[j][1],coords[j][0])),map.project(L.latLng(coords[j+1][1],coords[j+1][0])) );
-                            if(distance < minDistance) {
-                                minDistance = distance;
-                                indexi = i;
-                                indexj = j;
-                            }
-                        }
-                    }
-                    newFeature.geometry.coordinates = [feature.geometry.coordinates[indexi][indexj], feature.geometry.coordinates[indexi][indexj+1]];
-                }                
                 
-                // add new feature to highlighted selection
-                var aux = L.geoJSON(newFeature, {
-                    style: styleHighlighted
-                }).addTo(map);
-                aux.bringToFront();
-                var key = Object.keys(bus.map.highlightedPaths).length;
-                bus.map.highlightedPaths[key] = aux;
             }
         });
     };
 
-    exports.addGeoJson = function(geojson, name, enableEachFeature){
+    exports.addGeoJson = function(geojson, name, enableEachFeature, hidden){
 
         if(enableEachFeature == undefined) enableEachFeature = true;
+        if(hidden == undefined) hidden = false;
+
+        var style;
+        if(hidden) {
+            style = styleHide;
+        }
+        else {
+            style = styleDefault;
+        }
 
         if(enableEachFeature) {
             var geo = L.geoJSON(geojson, {
                 onEachFeature: bus.map.onEachFeature,
-                style: styleDefault
+                style: style,
+                pointToLayer: function (feature, latlng) {
+                    return L.circle(latlng, bus.filterSize, style);
+                }
             }).addTo(map);
             geo.bringToBack();
             bus.map.paths[name] = geo;
         }
         else {
             var geo = L.geoJSON(geojson, {
-                style: styleDefault
+                style: style,
+                pointToLayer: function (feature, latlng) {
+                    return L.circle(latlng, bus.filterSize, style);
+                }
             }).addTo(map);
             geo.bringToBack();
             bus.map.paths[name] = geo;
@@ -367,6 +402,31 @@ bus.Map = function(){
         bus.map.highlightedLines[lineName].remove();
     };
 
+    exports.changeSelectionMode = function(mode) {
+        bus.map.selectionMode = mode;
+        for(var p in bus.map.highlightedPaths)
+            bus.map.highlightedPaths[p].remove();
+        bus.map.highlightedPaths = {};
+    };
+
+    exports.changeFilterSize = function(newSize) {
+        if(bus.map.paths["filter"] == undefined)
+            return;
+
+        bus.filterSize = newSize;
+
+        if(bus.map.selectionMode === "node") {
+            bus.map.paths["filter"].eachLayer(function(layer) {
+                layer.setRadius(newSize);
+            });
+        }
+        else {
+            bus.map.paths["filter"].remove();
+            var path = calculateBuffer(bus.map.paths["withoutBuffer"].toGeoJSON(), newSize);
+            bus.map.addGeoJson(path, "filter", false, false);
+        }
+    };
+
     exports.clearPaths = function(){
         for(var p in bus.map.paths)
             bus.map.paths[p].remove();
@@ -381,22 +441,29 @@ bus.Map = function(){
     };
 
     exports.getHighlightedPath = function() {
-        var featureGroup = new L.FeatureGroup();
-        for(var l in bus.map.highlightedPaths) {
-            var geojson = bus.map.highlightedPaths[l].toGeoJSON();
-            for(var f in geojson.features) {
-                var aux = L.GeoJSON.geometryToLayer(geojson.features[f]);
-                aux.addTo(featureGroup);
+        if(bus.map.selectionMode === "segment") {
+            var featureGroup = new L.FeatureGroup();
+            for(var l in bus.map.highlightedPaths) {
+                var geojson = bus.map.highlightedPaths[l].toGeoJSON();
+                console.log(geojson);
+                for(var f in geojson.features) {
+                    var aux = L.GeoJSON.geometryToLayer(geojson.features[f]);
+                    aux.addTo(featureGroup);
+                }
             }
+            return featureGroup.toGeoJSON();
         }
-        // for(var l in bus.map.highlightedLines) {
-        //     var geojson = bus.map.highlightedLines[l].toGeoJSON();
-        //     for(var f in geojson.features) {
-        //         var aux = L.GeoJSON.geometryToLayer(geojson.features[f]);
-        //         aux.addTo(featureGroup);
-        //     }
-        // }
-        return featureGroup.toGeoJSON();
+        else {
+            var featureGroup = {};
+            featureGroup.type = "FeatureCollection";
+            featureGroup.features = [];
+            for(var l in bus.map.highlightedPaths) {
+                var geojson = bus.map.highlightedPaths[l].toGeoJSON();
+                featureGroup.features.push(geojson);
+            }
+            console.log(featureGroup);
+            return featureGroup;
+        }
     };
 
     exports.saveImage = function() {

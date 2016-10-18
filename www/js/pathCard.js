@@ -49,8 +49,9 @@ bus.PathCard = function(){
     function pathSelector(propId){
         var buttonId = "pathSelector";
 
-        var dropClass = propId==0?"":"leftSpace";
-        var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Save as geojson");
+        var dropClass = propId==0?"":"leftSpace topSpace";
+        var div = cardDiv.append("div").style("text-align","center");
+        var btn = bus.UiParts.ButtonText(div, buttonId, "Save as geojson", dropClass);
         // cardDiv.append("br");
 
         // add callback
@@ -59,6 +60,34 @@ bus.PathCard = function(){
             // var buffered = calculateBuffer(geojson);
             download(JSON.stringify(geojson), 'geo.json', 'text/plain');
         });
+    }
+
+    function modeSelector(propId){
+        var dropId = "modeSelector";
+
+        // adds the drop down
+        var dropClass = propId==0?"":"leftSpace";
+        var mode = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Selection mode: ");
+        var modeDrop = bus.UiParts.DropDown(cardDiv,dropId,dropClass);
+        // cardDiv.append("br");
+
+        // gets the list
+        var ul = modeDrop.select("ul");
+        // sets the button label
+        modeDrop.select("button").html("segment");
+
+        // binds json to items and appends
+        ul.selectAll("li")
+            .data(["segment", "node"])
+            .enter()
+            .append('li')
+            .html(function(d) { return '<a href="#">' + d + '</a>'; });
+
+        ul.selectAll("li")
+            .on('click', function(d){
+                modeDrop.select('button').html(d);
+                bus.map.changeSelectionMode(d);
+            });
     }
 
     exports.closeCard = function(){
@@ -91,10 +120,10 @@ bus.PathCard = function(){
         createDiv(mainDiv);
 
         // card menu
-        pathSelector(0);
-
-        // close card
         closeCardButton();
+        modeSelector(0);
+        pathSelector(1);
+        
 
         exports.showed = true;
         

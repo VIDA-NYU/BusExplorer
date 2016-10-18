@@ -47,8 +47,8 @@ bus.UiParts.ButtonText = function(parentDiv, buttonId, text, buttonClass){
 };
 
 bus.UiParts.DropDown = function(parentDiv, dropId, dropClass){
-    // drop down div element
-    var dropDiv = parentDiv.append("div")
+    // drop down span element
+    var dropDiv = parentDiv.append("span")
         .classed("dropdown", true)
         .attr("id", dropId);
 
@@ -71,8 +71,8 @@ bus.UiParts.DropDown = function(parentDiv, dropId, dropClass){
 };
 
 bus.UiParts.SimpleText = function(parentDiv, textId, textClass, text){
-    // drop down div element
-    var textDiv = parentDiv.append("div")
+    // drop down span element
+    var textDiv = parentDiv.append("span")
         .classed("text", true)
         .attr("id", textId)
         .text(text)
@@ -89,16 +89,20 @@ bus.UiParts.SimpleText = function(parentDiv, textId, textClass, text){
     return textDiv;
 };
 
-bus.UiParts.Slider = function(parentDiv, pickerId){
+bus.UiParts.Slider = function(parentDiv, pickerId, range, initialValue){
 
     var div = parentDiv.append("input")
         .attr("id",pickerId)
         .attr("type", "text")
         .attr("class", "span2")
-        .attr("data-slider-min", 0)
-        .attr("data-slider-max", 23)
+        .attr("data-slider-min", range[0])
+        .attr("data-slider-max", range[1])
         .attr("data-slider-step", 1)
-        .attr("data-slider-value", "[0,24]");
+
+    if(initialValue.length == 2)
+        div.attr("data-slider-value", "["+initialValue[0]+","+initialValue[1]+"]");
+    else
+        div.attr("data-slider-value", initialValue);
 
     $("#"+pickerId).slider({});
 

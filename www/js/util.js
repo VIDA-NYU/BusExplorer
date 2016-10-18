@@ -4,8 +4,11 @@
 #
 */
 
-var calculateBuffer = function(geoJSON) {
-    var buffer = turf.buffer(geoJSON, 0.05, 'kilometers');
+var calculateBuffer = function(geoJSON, bufferSizeInMeters) {
+    if(bufferSizeInMeters == undefined)
+        bufferSizeInMeters = 50.0;
+
+    var buffer = turf.buffer(geoJSON, bufferSizeInMeters * 0.001, 'kilometers');
     return buffer;
 };
 

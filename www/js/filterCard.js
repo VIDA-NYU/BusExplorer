@@ -159,7 +159,7 @@ bus.FilterCard = function(){
         // adds the drop down
         var dropClass = propId==0?"":"leftSpace";
         var start = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Hours: ");
-        var startPicker = bus.UiParts.Slider(cardDiv,"picker");
+        var startPicker = bus.UiParts.Slider(cardDiv,"picker", [0,23], [0,23]);
         // cardDiv.append("br");
     }
 
@@ -214,22 +214,51 @@ bus.FilterCard = function(){
             reader.onload = function() {
                 
                 path = JSON.parse(reader.result);
-                bus.map.addGeoJson(path, "withoutBuffer", false);
-                path = calculateBuffer(path)
-                bus.map.addGeoJson(path, "filter", false);
-                
+                var type = path.features[0].geometry.type;
+
+                if(type === "LineString") {
+                    bus.map.addGeoJson(path, "withoutBuffer", false);
+                    path = calculateBuffer(path);
+                    bus.map.addGeoJson(path, "filter", false, true);
+                    $("#filterCheckbox").find("input").attr("disabled",false);
+                }
+                else if(type === "Point"){
+                    bus.map.addGeoJson(path, "filter", false, true);
+                    bus.map.showFilterBuffer(true);
+                    $("#filterBufferSizeSelector").collapse("show");
+                    $("#filterCheckbox").find("input").prop("checked",true);
+                    $("#filterCheckbox").find("input").attr("disabled",true);
+                }
             }
         });
 
         var checkbox = bus.UiParts.CheckBox(cardDiv, "filterCheckbox", dropClass, "Show filter buffer");
+        $("#filterCheckbox").find("input").prop("checked",false);
         $("#filterCheckbox").change(function () {
             if ($("#filterCheckbox").find("input").is(":checked")) {
+                $("#filterBufferSizeSelector").collapse("show");
                 bus.map.showFilterBuffer(true);
             } else {
+                $("#filterBufferSizeSelector").collapse("hide");
                 bus.map.showFilterBuffer(false);
             }
         });
 
+    }
+
+    function filterBufferSizeSelector(propId){
+        var dropId = "filterBufferSizeSelector";
+
+        // adds the drop down
+        var dropClass = propId==0?"":"leftSpace";
+        var div = cardDiv.append("div").attr("class", "collapse").attr("id", dropId);
+        var start = bus.UiParts.SimpleText(div,dropId+"Label",dropClass,"Buffer size (in feet): ");
+        var startPicker = bus.UiParts.Slider(div,"bufferSize", [30,300], bus.filterSize * 3.28084);
+
+        $("#bufferSize").change(function() {
+            var value = $("#bufferSize").val();
+            bus.map.changeFilterSize(parseFloat(value) * 0.3048);
+        })
     }
 
     // selects the property
@@ -351,6 +380,7 @@ bus.FilterCard = function(){
         idSelector(0);
         lineSelector(0);
         pathSelector(0);
+        filterBufferSizeSelector(0);
         exportPingCSVSelector(0);
         exportTripCSVSelector(1);
         exportSpeedCSVSelector(1);
