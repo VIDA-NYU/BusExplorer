@@ -97,7 +97,7 @@ bus.Ui = function() {
         // gets the list
         var ul = drop.select("ul");
         // sets the button label
-        drop.select("button").html("LION layer");
+        drop.select("button").html("Selection");
 
         // binds json to items and appends
         ul.selectAll("li")
@@ -145,7 +145,7 @@ bus.Ui = function() {
         // gets the list
         var ul = drop.select("ul");
         // sets the button label
-        drop.select("button").html("Bus lines layer");
+        drop.select("button").html("Bus routes");
 
         // binds json to items and appends
         ul.selectAll("li")
