@@ -465,6 +465,9 @@ bus.FilterCard = function(){
     };
 
     exports.getPath = function(){
+        for(f in path.features) {
+            path.features[f].filterSize = bus.filterSize;
+        }
         return path;
     };
 

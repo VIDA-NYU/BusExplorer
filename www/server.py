@@ -132,18 +132,38 @@ class StackMirror():
 ##################################################################################
 #### Return records
 ##################################################################################
-    def getRecords(self, geoJson, filters):
+    def getRecords(self, geoJson, filters, selectionMode):
+
+        print selectionMode, geoJson
 
         # modify geoJson so that it suits pymongo
         geoJson.pop("type")
         geoJson.pop("properties")
-        geoJson["$geometry"] = geoJson.pop("geometry")
+        if selectionMode == "segment":
+            geoJson["$geometry"] = geoJson.pop("geometry")
+            geoJson.pop("filterSize")
 
-        query = {"VehicleLocation" : {"$geoWithin": geoJson}}
-        filters.insert(0,query)
+            query = {"VehicleLocation" : {"$geoWithin": geoJson}}
+            filters.insert(0,query)
+            
+            cursor = self.collection.find({'$and': filters})
+            return cursor
+
+        elif selectionMode == "node":
+            geoJson["$centerSphere"] = [[geoJson["geometry"]["coordinates"][0],geoJson["geometry"]["coordinates"][1]], geoJson["filterSize"] / 6378.1] #radius given in radians
+            geoJson.pop("geometry")
+            geoJson.pop("filterSize")
+            print geoJson
+
+            query = {"VehicleLocation" : {"$geoWithin": geoJson}}
+            filters.insert(0,query)
+            print query
+            
+            cursor = self.collection.find({'$and': filters})
+            return cursor
+
+
         
-        cursor = self.collection.find({'$and': filters})
-        return cursor
 
 ##################################################################################
 #### Server: return requested trip info
@@ -202,11 +222,13 @@ class StackMirror():
         inputJson = cherrypy.request.json
         filters  = self.getFilters(inputJson)
         features = inputJson['path']['features']
+        selectionMode = inputJson['selectionMode']
 
         formatted = 'OriginRef,Bearing,Latitude,Longitude,VehicleRef,DestinationName,JourneyPatternRef,RecordedAtTime,LineRef,PublishedLineName,DatedVehicleJourneyRef,DirectionRef\n'
         for f in features:
-            cursor = self.getRecords(f, filters[:])
+            cursor = self.getRecords(f, filters[:], selectionMode)
             records = list(cursor)
+            print len(records)
             formatted += ''.join(self.getFormattedLine(records[n])+'\n' for n in xrange(len(records)))
 
         cherrypy.response.headers['Content-Type']        = 'text/csv'
