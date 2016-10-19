@@ -9,6 +9,8 @@ bus.BarChart = function(){
     var chart = undefined;
     var cdim  = undefined;
     var parent = undefined;
+    var y = undefined;
+    var n = 0;
 
     // chart size
     var margin = {top: 20, right: 30, bottom: 30, left: 40};
@@ -23,49 +25,22 @@ bus.BarChart = function(){
     var exports = {};
 
     // creates the dc.js chart
-    function createChart(parentDiv,data1,data2){
-        // console.log(data1,data2);
-        var m = 2;
-        var n = 0;
-        for(var i=0; i<data1.length; i++) {
-            n = Math.max(n,data1[i].segment);
-        }
-        for(var i=0; i<data2.length; i++) {
-            n = Math.max(n,data2[i].segment);
+    function createChart(parentDiv,data){
+        console.log(data);
+        var m = 2; // number of cases
+        n = 0; // number of segments
+
+        // find number of segments
+        for(var i=0; i<m; i++) {
+            for(var j=0; j<data[i].length; j++) {
+                data[i][j].caseId = i; // used for update
+                n = Math.max(n,data[i][j].segment);
+            }
         }
         n = n+1;
 
-        var data = d3.range(m).map(function() {return d3.range(n).map(function(){return 0})});
-        var count = d3.range(n).map(function(){return 0});
-        for(var i=0; i<data1.length; i++) {
-            var segment = data1[i].segment;
-            var avgSpeed = data1[i].avgSpeed;
-            data[0][segment]+=avgSpeed;
-            count[segment]++;
-        }
-        for(var i=0; i<data[0].length; i++) {
-            if(count[i] > 0)
-                data[0][i] /= count[i];
-        }
 
-        count = d3.range(n).map(function(){return 0});
-        for(var i=0; i<data2.length; i++) {
-            var segment = data2[i].segment;
-            var avgSpeed = data2[i].avgSpeed;
-            data[1][segment]+=avgSpeed;
-            count[segment]++;
-        }
-        for(var i=0; i<data[1].length; i++) {
-            if(count[i] > 0)
-                data[1][i] /= count[i];
-        }
-
-        // var m = 2;
-        // var n = 10;
-        // var data = d3.range(m).map(function() { return d3.range(n).map(function(){return 80*Math.random();}); });
-        console.log(data);
-
-        var y = d3.scale.linear()
+        y = d3.scale.linear()
             .domain([0, 50])
             .range([height, 0]);
 
@@ -103,17 +78,22 @@ bus.BarChart = function(){
             .call(xAxis);
 
         svg.append("g").selectAll("g")
-            .data(data)
+            .data(d3.range(n))
           .enter().append("g")
             .style("fill", function(d, i) { return z(i); })
             .attr("transform", function(d, i) { return "translate(" + x1(i) + ",0)"; })
           .selectAll("rect")
-            .data(function(d) { return d; })
+            .data(function(d,i) {
+                return data[i%2];
+            })
           .enter().append("rect")
+            .attr("caseId", function(d) {return d.caseId})
+            .attr("segmentId", function(d) {return d.segment})
+            .attr("class", "caseRect")
             .attr("width", x1.rangeBand())
-            .attr("height", function(d) {return height-y(d);})
+            .attr("height", function(d) {return y(0)-y(d.mean);})
             .attr("x", function(d, i) { return x0(i); })
-            .attr("y", function(d) { return y(d); })
+            .attr("y", function(d) { return y(d.mean); })
             .on("mouseover", function(d,i) {
                 if(bus.map.highlightSegment(i)) {
                     svg.selectAll("rect").style("opacity",0.5);
@@ -126,8 +106,8 @@ bus.BarChart = function(){
             });
 
         svg.append("text")
-            .text("Avg. speed (mph)")
-            .attr("x", 0)
+            .text("Mean speed (mph)")
+            .attr("x", margin.left/2)
             .attr("y", -margin.top/2)
             .attr("text-anchor", "middle")
 
@@ -142,6 +122,33 @@ bus.BarChart = function(){
         // svg.selectAll(".y axis").selectAll("text").attr("style", "font: 12px sans-serif; text-anchor: end;");
         // svg.selectAll(".x axis").selectAll("text").attr("style", "font: 12px sans-serif; text-anchor: middle;");
         svg.append("defs").append("style").attr("type", "text/css").text("path {fill: none; stroke: #000000} text {font: 12px sans-serif}");
+    }
+
+    exports.update = function(data) {
+
+        parent.selectAll(".caseRect").each(function(d,i) {
+            var caseId = d.caseId;
+            var segmentId = d.segment;
+
+            var filtered = [];
+            if(data[caseId] == undefined) {
+                filtered.push({'mean': 0});
+            }
+            else {
+                filtered = data[caseId].filter(function(d) {return d.segment == segmentId});
+                if(filtered == undefined || filtered.length == 0) {
+                    filtered.push({'mean': 0});
+                }
+            }
+
+            filtered[0].segment = segmentId;
+            filtered[0].caseId = caseId;
+
+            d3.select(this).data(filtered)
+                    .transition().attr("height", function(d) {return y(0)-y(d.mean);})
+                    .attr("y", function(d) { return y(d.mean); });
+            
+        });
     }
 
     exports.saveImage = function(){

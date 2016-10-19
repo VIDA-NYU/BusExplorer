@@ -21,7 +21,7 @@ bus.Ui = function() {
             bus.globalCardId += 1;
 
             // creates a new card
-            var card = new bus.HistogramCard();
+            var card = new bus.PlotCard("barchart");
             // creates the card
             card.initCard();
         });
@@ -29,22 +29,19 @@ bus.Ui = function() {
 
 
     // creates the add cart button
-    function addScatterCard(parentDiv){
-        var buttonId = "addScatterCard";
+    function addBoxPlotCard(parentDiv){
+        var buttonId = "addBoxPlotCard";
 
         // adds the button
-        var btn = bus.UiParts.Button(parentDiv,buttonId, "glyphicon glyphicon-record","leftSpace");
+        var btn = bus.UiParts.Button(parentDiv,buttonId, "fa fa-minus-square-o","leftSpace");
 
         btn.on('click', function(){
-            // avoid errors
-            if(!Object.keys(bus.loadedDataSet).length)
-                return;
 
             // increments the number of active cards
             bus.globalCardId += 1;
 
             // creates a new card
-            var card = new bus.ScatterCard();
+            var card = new bus.PlotCard("boxplot");
             // creates the card
             card.initCard(true);
         });
@@ -243,7 +240,7 @@ bus.Ui = function() {
         // creates the add card button
         addHistogramCard(mainMenu);
         // creates the add card button
-        // addScatterCard(mainMenu);
+        addBoxPlotCard(mainMenu);
         // creates the add filter button
         addFilterCard(mainMenu);
         // creates the add filter button

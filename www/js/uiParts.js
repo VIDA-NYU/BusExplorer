@@ -54,13 +54,14 @@ bus.UiParts.DropDown = function(parentDiv, dropId, dropClass){
 
     // button left space
     if(dropClass)
-        dropDiv.classed("leftSpace", true);
+        dropDiv.classed(dropClass, true);
 
     // creates the drop down
     dropDiv.append("button")
         .classed("btn btn-primary btn-sm dropdown-toggle", true)
         .attr("type", "button")
-        .attr("json-toggle", "dropdown");
+        .attr("json-toggle", "dropdown")
+        .classed(dropClass, true);
 
     // creates the list
     dropDiv.append("ul")

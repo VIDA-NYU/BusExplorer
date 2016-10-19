@@ -111,6 +111,7 @@ class StackMirror():
                 # print b, lines[b], buses[b][i]['DatedVehicleJourneyRef']
 
         speedsPerLine = {}
+        speedsPerLine["all"] = []
         for b in lines:
             line = lines[b]
 
@@ -119,6 +120,8 @@ class StackMirror():
             else:
                 speedsPerLine[line] = []
                 speedsPerLine[line].extend(speedsPerBus[b])
+
+            speedsPerLine["all"].extends(speedsPerBus[b])
 
         return speedsPerLine
 
@@ -305,7 +308,7 @@ class StackMirror():
         features = inputJson['path']['features']
         selectionMode = inputJson['selectionMode']
 
-        formatted = 'segment,line,count,mean,median,std\n'
+        formatted = 'segment,line,count,mean,median,std,min,max,percentile25th,percentile75th\n'
         if selectionMode == "segment":
             count = 0
             for f in features:
@@ -315,7 +318,8 @@ class StackMirror():
                 # print "============"+str(count)+"============="
                 for l in avgSpeedPerLine:
                     if avgSpeedPerLine[l] >= 1.0:
-                        formatted += "%d,%s,%d,%f,%f,%f\n"%(count,l,len(speedByLine[l]),numpy.mean(speedByLine[l]),numpy.median(speedByLine[l]),numpy.std(speedByLine[l]))
+                        formatted += "%d,%s,%d,%f,%f,%f,%f,%f,%f,%f\n"%(count,l,len(speedByLine[l]),numpy.mean(speedByLine[l]),numpy.median(speedByLine[l]),numpy.std(speedByLine[l]),\
+                            numpy.min(speedByLine[l]),numpy.max(speedByLine[l]),numpy.percentile(speedByLine[l],25),numpy.percentile(speedByLine[l],75))
                 count+=1
         elif selectionMode == "node":
             
@@ -335,6 +339,7 @@ class StackMirror():
                 p1 = [features[i]["geometry"]["coordinates"][1],features[i]["geometry"]["coordinates"][0]]
 
                 speedByLine = {}
+                speedByLine["all"] = []
                 for b in medianFirstFeature:
                     if (b in medianSecondFeature):
                         dist = distance.distance(p0,p1).meters
@@ -354,8 +359,11 @@ class StackMirror():
                             speedByLine[line] = []
                             speedByLine[line].append(speedMh)
 
+                        speedByLine["all"].append(speedMh)
+
                 for l in speedByLine:
-                    formatted += "%d,%s,%d,%f,%f,%f\n"%(i-1,l,len(speedByLine[l]),numpy.mean(speedByLine[l]),numpy.median(speedByLine[l]),numpy.std(speedByLine[l]))
+                    formatted += "%d,%s,%d,%f,%f,%f,%f,%f,%f,%f\n"%(i-1,l,len(speedByLine[l]),numpy.mean(speedByLine[l]),numpy.median(speedByLine[l]),numpy.std(speedByLine[l]),\
+                        numpy.min(speedByLine[l]),numpy.max(speedByLine[l]),numpy.percentile(speedByLine[l],25),numpy.percentile(speedByLine[l],75))
 
         cherrypy.response.headers['Content-Type']        = 'text/csv'
         cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
@@ -388,6 +396,10 @@ class StackMirror():
                     outputJson[count][l]['mean'] = numpy.mean(speedByLine[l])
                     outputJson[count][l]['median'] = numpy.median(speedByLine[l])
                     outputJson[count][l]['std'] = numpy.std(speedByLine[l])
+                    outputJson[count][l]['min'] = numpy.min(speedByLine[l])
+                    outputJson[count][l]['max'] = numpy.max(speedByLine[l])
+                    outputJson[count][l]['percentile25th'] = numpy.percentile(speedByLine[l],25)
+                    outputJson[count][l]['percentile75th'] = numpy.percentile(speedByLine[l],75)
             count+=1
 
         return outputJson
