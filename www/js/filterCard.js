@@ -65,6 +65,8 @@ bus.FilterCard = function(){
                 // updates the selected function
                 bus.selectedProperties[dropId] = d;
             });
+
+        cardDiv.append("br");
     }
 
     function monthSelector(propId){
@@ -94,6 +96,8 @@ bus.FilterCard = function(){
                 // updates the selected function
                 bus.selectedProperties[dropId] = d;
             });
+
+        cardDiv.append("br");
     }
 
     function yearSelector(propId){
@@ -123,6 +127,8 @@ bus.FilterCard = function(){
                 // updates the selected function
                 bus.selectedProperties[dropId] = d;
             });
+
+        cardDiv.append("br");
     }
 
     function directionSelector(propId){
@@ -151,6 +157,8 @@ bus.FilterCard = function(){
                 // updates the selected function
                 bus.selectedProperties[dropId] = d;
             });
+
+        cardDiv.append("br");
     }
 
     function hourSelector(propId){
@@ -217,17 +225,24 @@ bus.FilterCard = function(){
                 var type = path.features[0].geometry.type;
 
                 if(type === "LineString") {
+                    bus.map.changeSelectionMode("segment");
                     bus.map.addGeoJson(path, "withoutBuffer", false);
                     path = calculateBuffer(path);
                     bus.map.addGeoJson(path, "filter", false, true);
+                    bus.map.showFilterBuffer(false);
+                    $("#filterBufferSizeSelector").collapse("hide");
                     $("#filterCheckbox").find("input").attr("disabled",false);
+                    $("#filterCheckbox").find("input").prop("checked",false);
+                    $("#showSpeedSelector").attr("disabled", false);
                 }
                 else if(type === "Point"){
+                    bus.map.changeSelectionMode("node");
                     bus.map.addGeoJson(path, "filter", false, true);
                     bus.map.showFilterBuffer(true);
                     $("#filterBufferSizeSelector").collapse("show");
                     $("#filterCheckbox").find("input").prop("checked",true);
                     $("#filterCheckbox").find("input").attr("disabled",true);
+                    $("#showSpeedSelector").attr("disabled", true);
                 }
             }
         });

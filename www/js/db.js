@@ -22,7 +22,8 @@ bus.Db = function (){
 			ids:bus.filterCard.getIds(),
 			lines:bus.filterCard.getLines(),
             direction:bus.filterCard.getDirection(),
-			path:bus.filterCard.getPath()
+			path:bus.filterCard.getPath(),
+			selectionMode:bus.map.selectionMode
         };
         return data;
     }
