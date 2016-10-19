@@ -12,6 +12,7 @@ import copy
 import random
 import json
 import argparse
+import numpy
 
 class StackMirror():
 
@@ -64,7 +65,7 @@ class StackMirror():
 ##################################################################################
 #### Compute avg speed per line
 ##################################################################################
-    def computeAvgSpeedPerLine(self, records):
+    def computeSpeedPerLine(self, records):
 
         buses = {}
         for r in records:
@@ -119,22 +120,15 @@ class StackMirror():
                 speedsPerLine[line] = []
                 speedsPerLine[line].extend(speedsPerBus[b])
 
-        avgSpeedsPerLine = {}
-        for l in speedsPerLine:
-            if len(speedsPerLine[l]) > 0:
-                avgSpeedsPerLine[l] = sum(speedsPerLine[l]) / float(len(speedsPerLine[l]))
-            else:
-                speedsPerLine[b] = 0
-        # print speedsPerLine
-        # print avgSpeedsPerLine
-        return avgSpeedsPerLine
+        return speedsPerLine
 
 ##################################################################################
 #### Return records
 ##################################################################################
     def getRecords(self, geoJson, filters, selectionMode):
 
-        print selectionMode, geoJson
+        geoJson = geoJson.copy()
+        filters = filters[:]
 
         # modify geoJson so that it suits pymongo
         geoJson.pop("type")
@@ -150,18 +144,50 @@ class StackMirror():
             return cursor
 
         elif selectionMode == "node":
-            geoJson["$centerSphere"] = [[geoJson["geometry"]["coordinates"][0],geoJson["geometry"]["coordinates"][1]], geoJson["filterSize"] / 6378.1] #radius given in radians
+            geoJson["$centerSphere"] = [[geoJson["geometry"]["coordinates"][0],geoJson["geometry"]["coordinates"][1]], geoJson["filterSize"] / 6378100.0] #radius given in radians
             geoJson.pop("geometry")
             geoJson.pop("filterSize")
-            print geoJson
 
             query = {"VehicleLocation" : {"$geoWithin": geoJson}}
             filters.insert(0,query)
-            print query
             
             cursor = self.collection.find({'$and': filters})
+
+            print query
+
             return cursor
 
+
+##################################################################################
+#### Return median ping time
+##################################################################################
+    def getMedianPingTimeByBus(self, records):
+        times = {}
+        buses = {}
+        for e in records:
+            b = e['DatedVehicleJourneyRef']
+            if b in times:
+                times[b].append(numpy.datetime64(e['RecordedAtTime']))
+                buses[b].append(e)
+            else:
+                times[b] = []
+                times[b].append(numpy.datetime64(e['RecordedAtTime']))
+                buses[b] = []
+                buses[b].append(e)
+
+        medianTime = {}
+        minTime = {}
+        for b in times:
+            minTime[b] = numpy.min(times[b])
+
+            for i in range(0,len(times[b])):
+                times[b][i] = times[b][i] - minTime[b]
+
+            medianTime[b] = {}
+            medianTime[b]['median'] = numpy.median(times[b]) + minTime[b]
+            medianTime[b]['PublishedLineName'] = buses[b][0]['PublishedLineName']
+
+        return medianTime
 
         
 
@@ -174,30 +200,61 @@ class StackMirror():
         inputJson = cherrypy.request.json
         filters  = self.getFilters(inputJson)
         features = inputJson['path']['features']
+        selectionMode = inputJson['selectionMode']
 
-        buses = {}
-        firstPing = {}
-        lastPing  = {}
-        for f in features:
-            cursor = self.getRecords(f, filters[:])
+        if selectionMode == "segment":
+            buses = {}
+            firstPing = {}
+            lastPing  = {}
+            for f in features:
+                cursor = self.getRecords(f, filters, selectionMode)
+                records = list(cursor)
+                
+                for e in records:
+                    b = e['DatedVehicleJourneyRef']
+                    if b in buses:
+                        buses[b].append(e)
+                        if e['RecordedAtTime'] < firstPing[b]:
+                            firstPing[b] = e['RecordedAtTime']
+                        if e['RecordedAtTime'] > lastPing[b]:
+                            lastPing[b] = e['RecordedAtTime']
+                    else:
+                        buses[b] = []
+                        buses[b].append(e)
+                        lastPing[b] = e['RecordedAtTime']
+                        firstPing[b] = e['RecordedAtTime']
+
+            formatted = 'BusID,PublishedLineName,DirectionRef,FirstPing,LastPing\n'
+            formatted += ''.join("%s,%s,%d,%s,%s\n"%(b,buses[b][0]['PublishedLineName'],buses[b][0]['DirectionRef'],firstPing[b],lastPing[b]) for b in buses)
+
+        elif selectionMode == "node":
+            numFeatures = len(features)
+
+            buses = {}
+
+            # first feature
+            cursor = self.getRecords(features[0], filters, selectionMode)
             records = list(cursor)
-            
+
             for e in records:
                 b = e['DatedVehicleJourneyRef']
                 if b in buses:
                     buses[b].append(e)
-                    if e['RecordedAtTime'] < firstPing[b]:
-                        firstPing[b] = e['RecordedAtTime']
-                    if e['RecordedAtTime'] > lastPing[b]:
-                        lastPing[b] = e['RecordedAtTime']
                 else:
                     buses[b] = []
                     buses[b].append(e)
-                    lastPing[b] = e['RecordedAtTime']
-                    firstPing[b] = e['RecordedAtTime']
 
-        formatted = 'BusID,PublishedLineName,DirectionRef,FirstPing,LastPing\n'
-        formatted += ''.join("%s,%s,%d,%s,%s\n"%(b,buses[b][0]['PublishedLineName'],buses[b][0]['DirectionRef'],firstPing[b],lastPing[b]) for b in buses)
+            medianFirstFeature = self.getMedianPingTimeByBus(records)
+
+            # last feature
+            cursor = self.getRecords(features[numFeatures-1], filters, selectionMode)
+            records = list(cursor)
+            medianSecondFeature = self.getMedianPingTimeByBus(records)
+
+            formatted = 'BusID,PublishedLineName,DirectionRef,FirstPing,LastPing\n'
+            for b in buses:
+                if (b in medianFirstFeature) and (b in medianSecondFeature):
+                    formatted += "%s,%s,%d,%s,%s\n"%(b,buses[b][0]['PublishedLineName'],buses[b][0]['DirectionRef'],medianFirstFeature[b]['median'],medianSecondFeature[b]['median'])
 
         cherrypy.response.headers['Content-Type']        = 'text/csv'
         cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
@@ -226,7 +283,7 @@ class StackMirror():
 
         formatted = 'OriginRef,Bearing,Latitude,Longitude,VehicleRef,DestinationName,JourneyPatternRef,RecordedAtTime,LineRef,PublishedLineName,DatedVehicleJourneyRef,DirectionRef\n'
         for f in features:
-            cursor = self.getRecords(f, filters[:], selectionMode)
+            cursor = self.getRecords(f, filters, selectionMode)
             records = list(cursor)
             print len(records)
             formatted += ''.join(self.getFormattedLine(records[n])+'\n' for n in xrange(len(records)))
@@ -246,18 +303,59 @@ class StackMirror():
         inputJson = cherrypy.request.json
         filters  = self.getFilters(inputJson)
         features = inputJson['path']['features']
+        selectionMode = inputJson['selectionMode']
 
-        formatted = 'segment,line,avgspeed\n'
-        count = 0
-        for f in features:
-            cursor = self.getRecords(f, filters[:])
-            records = list(cursor)
-            avgSpeedPerLine = self.computeAvgSpeedPerLine(records)
-            # print "============"+str(count)+"============="
-            for l in avgSpeedPerLine:
-                if avgSpeedPerLine[l] >= 1.0:
-                    formatted += "%d,%s,%f\n"%(count,l,avgSpeedPerLine[l])
-            count+=1
+        formatted = 'segment,line,count,mean,median,std\n'
+        if selectionMode == "segment":
+            count = 0
+            for f in features:
+                cursor = self.getRecords(f, filters, selectionMode)
+                records = list(cursor)
+                speedByLine = self.computeSpeedPerLine(records)
+                # print "============"+str(count)+"============="
+                for l in avgSpeedPerLine:
+                    if avgSpeedPerLine[l] >= 1.0:
+                        formatted += "%d,%s,%d,%f,%f,%f\n"%(count,l,len(speedByLine[l]),numpy.mean(speedByLine[l]),numpy.median(speedByLine[l]),numpy.std(speedByLine[l]))
+                count+=1
+        elif selectionMode == "node":
+            
+            for i in range(1, len(features)):
+
+                # speed between i-1 and i
+                cursor = self.getRecords(features[i-1], filters, selectionMode)
+                records = list(cursor)
+                medianFirstFeature = self.getMedianPingTimeByBus(records)
+
+                cursor = self.getRecords(features[i], filters, selectionMode)
+                records = list(cursor)
+                medianSecondFeature = self.getMedianPingTimeByBus(records)
+
+                # using center of both features to compute distance
+                p0 = [features[i-1]["geometry"]["coordinates"][1],features[i-1]["geometry"]["coordinates"][0]] #lat,lon format
+                p1 = [features[i]["geometry"]["coordinates"][1],features[i]["geometry"]["coordinates"][0]]
+
+                speedByLine = {}
+                for b in medianFirstFeature:
+                    if (b in medianSecondFeature):
+                        dist = distance.distance(p0,p1).meters
+                        timeDelta = abs((medianSecondFeature[b]['median'] - medianFirstFeature[b]['median']).item().total_seconds())
+
+                        if timeDelta > 0:
+                            speedMs = (dist / timeDelta) # in meters / seconds
+                        else:
+                            speedMs = 0
+                        speedKh = speedMs * 3.6
+                        speedMh = speedKh * 0.621371192
+
+                        line = medianFirstFeature[b]['PublishedLineName']
+                        if line in speedByLine:
+                            speedByLine[line].append(speedMh)
+                        else:
+                            speedByLine[line] = []
+                            speedByLine[line].append(speedMh)
+
+                for l in speedByLine:
+                    formatted += "%d,%s,%d,%f,%f,%f\n"%(i-1,l,len(speedByLine[l]),numpy.mean(speedByLine[l]),numpy.median(speedByLine[l]),numpy.std(speedByLine[l]))
 
         cherrypy.response.headers['Content-Type']        = 'text/csv'
         cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
@@ -274,17 +372,22 @@ class StackMirror():
         inputJson = cherrypy.request.json
         filters  = self.getFilters(inputJson)
         features = inputJson['path']['features']
+        selectionMode = inputJson['selectionMode']
 
         outputJson = {}
         count = 0
         for f in features:
-            cursor = self.getRecords(f, filters[:])
+            cursor = self.getRecords(f, filters, selectionMode)
             records = list(cursor)
-            avgSpeedPerLine = self.computeAvgSpeedPerLine(records)
+            speedByLine = self.computeSpeedPerLine(records)
             outputJson[count] = {}
-            for l in avgSpeedPerLine:
-                if avgSpeedPerLine[l] >= 1.0:
-                    outputJson[count][l] = avgSpeedPerLine[l]
+            for l in speedByLine:
+                if speedByLine[l] >= 1.0:
+                    outputJson[count][l] = {}
+                    outputJson[count][l]['count'] = len(speedByLine[l])
+                    outputJson[count][l]['mean'] = numpy.mean(speedByLine[l])
+                    outputJson[count][l]['median'] = numpy.median(speedByLine[l])
+                    outputJson[count][l]['std'] = numpy.std(speedByLine[l])
             count+=1
 
         return outputJson

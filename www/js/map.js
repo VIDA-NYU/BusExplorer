@@ -404,9 +404,9 @@ bus.Map = function(){
 
     exports.changeSelectionMode = function(mode) {
         bus.map.selectionMode = mode;
-        for(var p in bus.map.paths)
-            bus.map.paths[p].remove();
-        bus.map.paths = {};
+        for(var p in bus.map.highlightedPaths)
+            bus.map.highlightedPaths[p].remove();
+        bus.map.highlightedPaths = {};
     };
 
     exports.changeFilterSize = function(newSize) {
