@@ -13,24 +13,6 @@ var calculateBuffer = function(geoJSON, bufferSizeInMeters) {
 };
 
 var download = function(text, name, type) {
-    // if (navigator.msSaveBlob)
-    // {
-    //   var blob = new Blob([text],{type: type});
-    //   navigator.msSaveBlob(blob, name)
-    // }
-    // else
-    // {
-    //   window.open('data:text/csv;charset=utf-8,' + escape(text));
-    // }
-    // var a = document.createElement("a");
-    // document.body.appendChild(a);
-    // a.style = "display: none";
-    // var blob = new Blob([text], {type: type});
-    // var url = window.URL.createObjectURL(blob);
-    // a.href = url;
-    // a.download = name;
-    // a.click();
-    // window.URL.revokeObjectURL(url);
     var file = new File([text], name, {type: type});
     saveAs(file);
 };
@@ -44,12 +26,10 @@ var dataURLtoBlob = function(dataurl) {
     return new Blob([u8arr], {type:mime});
 };
 
-var downloadImage = function(data) {
-	var blob = dataURLtoBlob(data);
-	var objurl = URL.createObjectURL(blob);
-	var link = document.createElement("a");
-	link.download = "image.png";
-	link.href = objurl;
-	link.click();
+var downloadImage = function(canvas, name) {
+	
+	canvas.toBlob(function(blob) {
+	    saveAs(blob, name);
+	});
 };
 

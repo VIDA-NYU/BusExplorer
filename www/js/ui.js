@@ -77,7 +77,7 @@ bus.Ui = function() {
         var buttonId = "addExportCard";
 
         // adds the button
-        var btn = bus.UiParts.Button(parentDiv,buttonId, "glyphicon glyphicon-floppy-disk","leftSpace");
+        var btn = bus.UiParts.Button(parentDiv,buttonId, "glyphicon glyphicon-picture","leftSpace");
 
         btn.on('click', function(){
             bus.map.saveImage();

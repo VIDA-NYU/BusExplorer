@@ -474,8 +474,12 @@ bus.Map = function(){
         map.setZoom(zoom);
         
         var doImage = function(err, canvas) {
-            var image = canvas.toDataURL("image/png");
-            downloadImage(image);
+
+            var svg = d3.select("#cscale");
+            svg.append("defs").append("style").attr("type", "text/css").text("path {fill: none; stroke: #000000} text {font: 12px sans-serif}");
+            var svgHtml = document.getElementById("cscale").outerHTML;
+            canvg(canvas, svgHtml, {ignoreClear: true, ignoreDimensions: true});
+            downloadImage(canvas, "image.png"); 
         }
         leafletImage(map, doImage);
         

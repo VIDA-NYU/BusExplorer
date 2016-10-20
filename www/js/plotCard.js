@@ -65,7 +65,7 @@ bus.PlotCard = function(plotType){
         clearChart();
 
         if(saveBtn == undefined) {
-            saveBtn = bus.UiParts.Button(cardDiv,"saveChart", "glyphicon glyphicon-floppy-disk","leftSpace topSpace");
+            saveBtn = bus.UiParts.Button(cardDiv,"saveChart", "glyphicon glyphicon-picture","leftSpace topSpace");
         }
 
         if(drop == undefined) {
