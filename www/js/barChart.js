@@ -28,6 +28,7 @@ bus.BarChart = function(){
     function createChart(parentDiv,data){
         console.log(data);
         var m = 2; // number of cases
+        var max = 0;
         n = 0; // number of segments
 
         // find number of segments
@@ -35,13 +36,16 @@ bus.BarChart = function(){
             for(var j=0; j<data[i].length; j++) {
                 data[i][j].caseId = i; // used for update
                 n = Math.max(n,data[i][j].segment);
+                max = Math.max(max,data[i][j].mean);
             }
         }
         n = n+1;
 
+        console.log(n);
+
 
         y = d3.scale.linear()
-            .domain([0, 50])
+            .domain([0, max])
             .range([height, 0]);
 
         var x0 = d3.scale.ordinal()
@@ -78,12 +82,13 @@ bus.BarChart = function(){
             .call(xAxis);
 
         svg.append("g").selectAll("g")
-            .data(d3.range(n))
+            .data(d3.range(m))
           .enter().append("g")
             .style("fill", function(d, i) { return z(i); })
             .attr("transform", function(d, i) { return "translate(" + x1(i) + ",0)"; })
           .selectAll("rect")
             .data(function(d,i) {
+                console.log(i);
                 return data[i%2];
             })
           .enter().append("rect")
@@ -106,7 +111,7 @@ bus.BarChart = function(){
             });
 
         svg.append("text")
-            .text("Mean speed (mph)")
+            .text("Mean")
             .attr("x", margin.left/2)
             .attr("y", -margin.top/2)
             .attr("text-anchor", "middle")

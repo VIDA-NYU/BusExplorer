@@ -168,7 +168,7 @@ bus.FilterCard = function(){
         var dropClass = propId==0?"":"leftSpace";
         var start = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Hours: ");
         var startPicker = bus.UiParts.Slider(cardDiv,"picker", [0,23], [0,23]);
-        // cardDiv.append("br");
+        cardDiv.append("hr");
     }
 
     function idSelector(propId){
@@ -207,6 +207,8 @@ bus.FilterCard = function(){
                 }
             });
         });
+
+        cardDiv.append("hr");
     }
 
     function pathSelector(propId){
@@ -252,9 +254,13 @@ bus.FilterCard = function(){
         $("#filterCheckbox").change(function () {
             if ($("#filterCheckbox").find("input").is(":checked")) {
                 $("#filterBufferSizeSelector").collapse("show");
+                var curHeight = parseInt(d3.select(".filter").style("height"));
+                d3.select(".filter").transition().style("height", (curHeight+20)+"px");
                 bus.map.showFilterBuffer(true);
             } else {
                 $("#filterBufferSizeSelector").collapse("hide");
+                var curHeight = parseInt(d3.select(".filter").style("height"));
+                d3.select(".filter").transition().style("height", (curHeight-20)+"px");
                 bus.map.showFilterBuffer(false);
             }
         });
@@ -274,6 +280,8 @@ bus.FilterCard = function(){
             var value = $("#bufferSize").val();
             bus.map.changeFilterSize(parseFloat(value) * 0.3048);
         })
+
+        cardDiv.append("hr");
     }
 
     // selects the property
@@ -290,6 +298,8 @@ bus.FilterCard = function(){
             }
             bus.db.getPings(callAfter);
         });
+
+        cardDiv.append("hr");
     }
 
     function exportTripCSVSelector(propId){
@@ -311,7 +321,7 @@ bus.FilterCard = function(){
     function exportSpeedCSVSelector(propId){
         var buttonId = "exportSpeedSelector";
 
-        var dropClass = propId==0?"":"topSpace";
+        var dropClass = propId==0?"":"leftSpace";
         var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export speed csv", dropClass);
         // add callback
         btn.on("click", function(){
@@ -321,13 +331,16 @@ bus.FilterCard = function(){
             }
             bus.db.getSpeed(callAfter);
         });
+
+        var checkbox = bus.UiParts.CheckBox(cardDiv, "aggregationCheckbox", dropClass, "Aggregate by line");
+        $("#aggregationCheckbox").find("input").prop("checked",true);
     }
 
     function exportSpeedGeoJSONSelector(propId){
         var buttonId = "exportSpeedGeoJSONSelector";
 
-        var dropClass = propId==0?"":"topSpace";
-        var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export speed GeoJSON", dropClass);
+        var dropClass = propId==0?"":"leftSpace";
+        var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Export speed json", dropClass);
         // add callback
         btn.on("click", function(){
             $("#exportSpeedGeoJSONSelector").button("loading");
@@ -337,12 +350,14 @@ bus.FilterCard = function(){
             }
             $("#exportSpeedGeoJSONSelector").button("reset");
         });
+
+        cardDiv.append("hr");
     }
 
     function showSpeedSelector(propId){
         var buttonId = "showSpeedSelector";
 
-        var dropClass = propId==0?"":"topSpace leftSpace";
+        var dropClass = propId==0?"":"leftSpace";
         var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Show speed", dropClass);
         // add callback
         btn.on("click", function(){
@@ -469,6 +484,10 @@ bus.FilterCard = function(){
             path.features[f].filterSize = bus.filterSize;
         }
         return path;
+    };
+
+    exports.getAggregateByLine = function(){
+        return $("#aggregationCheckbox").find("input").is(":checked");
     };
 
 

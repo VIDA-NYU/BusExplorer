@@ -139,7 +139,6 @@ bus.PlotCard = function(plotType){
                 line: d.line,
                 mean : parseFloat(d.mean),
                 median : parseFloat(d.median),
-                std : parseFloat(d.std),
                 count : parseFloat(d.count),
                 min : parseFloat(d.min),
                 max : parseFloat(d.max),

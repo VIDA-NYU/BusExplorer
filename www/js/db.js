@@ -23,7 +23,8 @@ bus.Db = function (){
 			lines:bus.filterCard.getLines(),
             direction:bus.filterCard.getDirection(),
 			path:bus.filterCard.getPath(),
-			selectionMode:bus.map.selectionMode
+			selectionMode:bus.map.selectionMode,
+            aggregateByLine:bus.filterCard.getAggregateByLine()
         };
         return data;
     }

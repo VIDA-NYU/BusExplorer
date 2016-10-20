@@ -63,9 +63,9 @@ class StackMirror():
         return filters
 
 ##################################################################################
-#### Compute avg speed per line
+#### Compute avg speed by bus
 ##################################################################################
-    def computeSpeedPerLine(self, records):
+    def computeSpeedsByBus(self, records):
 
         buses = {}
         for r in records:
@@ -81,7 +81,7 @@ class StackMirror():
 
         # Compute speed between successive pings
         speedsPerBus = {}
-        lines = {}
+        linesByBus = {}
         avgSpeedsPerBus = {}
         for b in buses:
             speedsPerBus[b] = []
@@ -107,23 +107,27 @@ class StackMirror():
                 # print buses[b][i]['PublishedLineName'],p0,p1,dist,(t1-t0).seconds,speedKh
 
                 speedsPerBus[b].append(speedMh)
-                lines[b] = buses[b][i]['PublishedLineName']
+                linesByBus[b] = buses[b][i]['PublishedLineName']
                 # print b, lines[b], buses[b][i]['DatedVehicleJourneyRef']
 
-        speedsPerLine = {}
-        speedsPerLine["all"] = []
-        for b in lines:
-            line = lines[b]
+        return {'speeds': speedsPerBus, 'lines': linesByBus}
 
-            if line in speedsPerLine:
-                speedsPerLine[line].extend(speedsPerBus[b])
-            else:
-                speedsPerLine[line] = []
-                speedsPerLine[line].extend(speedsPerBus[b])
+    def aggregateByLine(self, byBus, name = "speeds"):
+        speedsByLine = {}
+        speedsByLine["all"] = []
+        for b in byBus[name]:
+            if len(byBus[name][b]) > 0:
+                line = byBus["lines"][b]
 
-            speedsPerLine["all"].extend(speedsPerBus[b])
+                if line in speedsByLine:
+                    speedsByLine[line].extend(byBus[name][b])
+                else:
+                    speedsByLine[line] = []
+                    speedsByLine[line].extend(byBus[name][b])
 
-        return speedsPerLine
+                speedsByLine["all"].extend(byBus[name][b])
+
+        return speedsByLine
 
 ##################################################################################
 #### Return records
@@ -204,6 +208,7 @@ class StackMirror():
         filters  = self.getFilters(inputJson)
         features = inputJson['path']['features']
         selectionMode = inputJson['selectionMode']
+        aggregateByLine = inputJson['aggregateByLine']
 
         if selectionMode == "segment":
             buses = {}
@@ -217,18 +222,34 @@ class StackMirror():
                     b = e['DatedVehicleJourneyRef']
                     if b in buses:
                         buses[b].append(e)
-                        if e['RecordedAtTime'] < firstPing[b]:
-                            firstPing[b] = e['RecordedAtTime']
-                        if e['RecordedAtTime'] > lastPing[b]:
-                            lastPing[b] = e['RecordedAtTime']
+                        if numpy.datetime64(e['RecordedAtTime']) < firstPing[b]:
+                            firstPing[b] = numpy.datetime64(e['RecordedAtTime'])
+                        if numpy.datetime64(e['RecordedAtTime']) > lastPing[b]:
+                            lastPing[b] = numpy.datetime64(e['RecordedAtTime'])
                     else:
                         buses[b] = []
                         buses[b].append(e)
-                        lastPing[b] = e['RecordedAtTime']
-                        firstPing[b] = e['RecordedAtTime']
+                        lastPing[b] = numpy.datetime64(e['RecordedAtTime'])
+                        firstPing[b] = numpy.datetime64(e['RecordedAtTime'])
 
-            formatted = 'BusID,PublishedLineName,DirectionRef,FirstPing,LastPing\n'
-            formatted += ''.join("%s,%s,%d,%s,%s\n"%(b,buses[b][0]['PublishedLineName'],buses[b][0]['DirectionRef'],firstPing[b],lastPing[b]) for b in buses)
+            if aggregateByLine:
+                tripTimes = {}
+                lines = {}
+                for b in buses:
+                    tripTimes[b] = [(firstPing[b] - lastPing[b]).item().total_seconds()]
+                    lines[b] = buses[b][0]['PublishedLineName']
+
+                byLine = self.aggregateByLine({"times": tripTimes, "lines": lines}, "times")
+                formatted = 'segment,line,count,mean,median,min,max,percentile25th,percentile75th\n'
+                for l in byLine:
+                        formatted += "%d,%s,%d,%d,%d,%d,%d,%d,%d\n"%(0,l,len(byLine[l]),numpy.mean(byLine[l]).item().total_seconds(),numpy.median(byLine[l]).item().total_seconds(),\
+                            numpy.min(byLine[l]).item().total_seconds(),numpy.max(byLine[l]).item().total_seconds(),\
+                            numpy.percentile(byLine[l],25).item().total_seconds(),numpy.percentile(byLine[l],75).item().total_seconds())
+
+
+            else:
+                formatted = 'BusID,PublishedLineName,DirectionRef,FirstPing,LastPing,TripTime\n'
+                formatted += ''.join("%s,%s,%d,%s,%s,%f\n"%(b,buses[b][0]['PublishedLineName'],buses[b][0]['DirectionRef'],firstPing[b],lastPing[b],(lastPing[b]-firstPing[b]).item().total_seconds()/60.0) for b in buses)
 
         elif selectionMode == "node":
             numFeatures = len(features)
@@ -254,10 +275,27 @@ class StackMirror():
             records = list(cursor)
             medianSecondFeature = self.getMedianPingTimeByBus(records)
 
-            formatted = 'BusID,PublishedLineName,DirectionRef,FirstPing,LastPing\n'
-            for b in buses:
-                if (b in medianFirstFeature) and (b in medianSecondFeature):
-                    formatted += "%s,%s,%d,%s,%s\n"%(b,buses[b][0]['PublishedLineName'],buses[b][0]['DirectionRef'],medianFirstFeature[b]['median'],medianSecondFeature[b]['median'])
+
+            if aggregateByLine:
+                tripTimes = {}
+                lines = {}
+                for b in buses:
+                    if (b in medianFirstFeature) and (b in medianSecondFeature):
+                        tripTimes[b] = [(medianFirstFeature[b]['median'] - medianSecondFeature[b]['median']).item().total_seconds()]
+                        lines[b] = buses[b][0]['PublishedLineName']
+
+                byLine = self.aggregateByLine({"times": tripTimes, "lines": lines}, "times")
+                formatted = 'segment,line,count,mean,median,min,max,percentile25th,percentile75th\n'
+                for l in byLine:
+                        formatted += "%d,%s,%d,%d,%d,%d,%d,%d,%d\n"%(0,l,len(byLine[l]),numpy.mean(byLine[l]).item().total_seconds(),numpy.median(byLine[l]).item().total_seconds(),\
+                            numpy.min(byLine[l]).item().total_seconds(),numpy.max(byLine[l]).item().total_seconds(),\
+                            numpy.percentile(byLine[l],25).item().total_seconds(),numpy.percentile(byLine[l],75).item().total_seconds())
+
+            else:
+                formatted = 'BusID,PublishedLineName,DirectionRef,FirstPing,LastPing\n'
+                for b in buses:
+                    if (b in medianFirstFeature) and (b in medianSecondFeature):
+                        formatted += "%s,%s,%d,%s,%s\n"%(b,buses[b][0]['PublishedLineName'],buses[b][0]['DirectionRef'],medianFirstFeature[b]['median'],medianSecondFeature[b]['median'])
 
         cherrypy.response.headers['Content-Type']        = 'text/csv'
         cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
@@ -307,20 +345,34 @@ class StackMirror():
         filters  = self.getFilters(inputJson)
         features = inputJson['path']['features']
         selectionMode = inputJson['selectionMode']
+        aggregateByLine = inputJson['aggregateByLine']
 
-        formatted = 'segment,line,count,mean,median,std,min,max,percentile25th,percentile75th\n'
+        if aggregateByLine:
+            formatted = 'segment,line,count,mean,median,min,max,percentile25th,percentile75th\n'
+        else:
+            formatted = 'segment,BusId,PublishedLineName,speed\n'
+
         if selectionMode == "segment":
             count = 0
             for f in features:
                 cursor = self.getRecords(f, filters, selectionMode)
                 records = list(cursor)
-                speedByLine = self.computeSpeedPerLine(records)
-                # print "============"+str(count)+"============="
-                for l in avgSpeedPerLine:
-                    if avgSpeedPerLine[l] >= 1.0:
-                        formatted += "%d,%s,%d,%f,%f,%f,%f,%f,%f,%f\n"%(count,l,len(speedByLine[l]),numpy.mean(speedByLine[l]),numpy.median(speedByLine[l]),numpy.std(speedByLine[l]),\
-                            numpy.min(speedByLine[l]),numpy.max(speedByLine[l]),numpy.percentile(speedByLine[l],25),numpy.percentile(speedByLine[l],75))
-                count+=1
+
+                if aggregateByLine:
+                    byBus = self.computeSpeedsByBus(records)
+                    speedByLine = self.aggregateByLine(byBus)
+                    for l in speedByLine:
+                        if len(speedByLine[l]) >= 1.0:
+                            formatted += "%d,%s,%d,%f,%f,%f,%f,%f,%f\n"%(count,l,len(speedByLine[l]),numpy.mean(speedByLine[l]),numpy.median(speedByLine[l]),\
+                                numpy.min(speedByLine[l]),numpy.max(speedByLine[l]),numpy.percentile(speedByLine[l],25),numpy.percentile(speedByLine[l],75))
+                    count+=1
+                else:
+                    byBus = self.computeSpeedsByBus(records)
+                    for b in byBus["speeds"]:
+                        if len(byBus["speeds"][b]) > 0:
+                            formatted += "%d,%s,%s,%f\n"%(count,b,byBus["lines"][b],numpy.mean(byBus["speeds"][b]))
+                    count+=1
+
         elif selectionMode == "node":
             
             for i in range(1, len(features)):
@@ -338,8 +390,8 @@ class StackMirror():
                 p0 = [features[i-1]["geometry"]["coordinates"][1],features[i-1]["geometry"]["coordinates"][0]] #lat,lon format
                 p1 = [features[i]["geometry"]["coordinates"][1],features[i]["geometry"]["coordinates"][0]]
 
-                speedByLine = {}
-                speedByLine["all"] = []
+                speedsByBus = {}
+                linesByBus = {}
                 for b in medianFirstFeature:
                     if (b in medianSecondFeature):
                         dist = distance.distance(p0,p1).meters
@@ -353,17 +405,25 @@ class StackMirror():
                         speedMh = speedKh * 0.621371192
 
                         line = medianFirstFeature[b]['PublishedLineName']
-                        if line in speedByLine:
-                            speedByLine[line].append(speedMh)
+                        if b in speedsByBus:
+                            speedsByBus[b].append(speedMh)
                         else:
-                            speedByLine[line] = []
-                            speedByLine[line].append(speedMh)
+                            speedsByBus[b] = []
+                            speedsByBus[b].append(speedMh)
+                            linesByBus[b] = line
 
-                        speedByLine["all"].append(speedMh)
 
-                for l in speedByLine:
-                    formatted += "%d,%s,%d,%f,%f,%f,%f,%f,%f,%f\n"%(i-1,l,len(speedByLine[l]),numpy.mean(speedByLine[l]),numpy.median(speedByLine[l]),numpy.std(speedByLine[l]),\
-                        numpy.min(speedByLine[l]),numpy.max(speedByLine[l]),numpy.percentile(speedByLine[l],25),numpy.percentile(speedByLine[l],75))
+                if aggregateByLine:
+                    speedByLine = self.aggregateByLine({'speeds': speedsByBus, 'lines': linesByBus})
+
+                    for l in speedByLine:
+                        formatted += "%d,%s,%d,%f,%f,%f,%f,%f,%f\n"%(i-1,l,len(speedByLine[l]),numpy.mean(speedByLine[l]),numpy.median(speedByLine[l]),\
+                            numpy.min(speedByLine[l]),numpy.max(speedByLine[l]),numpy.percentile(speedByLine[l],25),numpy.percentile(speedByLine[l],75))
+
+                else:
+                    for b in speedsByBus:
+                        if len(speedsByBus[b]) > 0:
+                            formatted += "%d,%s,%s,%f\n"%(i-1,b,linesByBus[b],numpy.mean(speedsByBus[b]))
 
         cherrypy.response.headers['Content-Type']        = 'text/csv'
         cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
