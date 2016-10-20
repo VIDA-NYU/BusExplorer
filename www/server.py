@@ -106,8 +106,10 @@ class StackMirror():
 
                 # print buses[b][i]['PublishedLineName'],p0,p1,dist,(t1-t0).seconds,speedKh
 
-                speedsPerBus[b].append(speedMh)
-                linesByBus[b] = buses[b][i]['PublishedLineName']
+                # ignore low speeds
+                if speedMh > 1.0:
+                    speedsPerBus[b].append(speedMh)
+                    linesByBus[b] = buses[b][i]['PublishedLineName']
                 # print b, lines[b], buses[b][i]['DatedVehicleJourneyRef']
 
         return {'speeds': speedsPerBus, 'lines': linesByBus}
