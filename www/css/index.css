@@ -48,18 +48,22 @@ html, body, #gmaps {
     position: fixed;
     top: 50px;
     left:5px;
+    width: 50%;
+    height: 50%;
 }
 
 .card{
     width: 400px;
     height: 370px;
     margin-bottom: 5px;
+    float: left;
 }
 
 .filter{
     width: 250px;
     height: 750px;
     margin-bottom: 5px;
+    float: left;
 }
 
 .slider-track {
