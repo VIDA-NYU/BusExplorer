@@ -48,7 +48,6 @@ html, body, #gmaps {
     position: fixed;
     top: 50px;
     left:5px;
-    width: 50%;
     height: 50%;
 }
 
@@ -121,4 +120,17 @@ html, body, #gmaps {
 
 .y.axis g {
   display: inline;
+}
+
+.caseLine {
+    fill: #fff;
+    stroke: #000;
+    stroke-width: 1.0px;
+}
+
+.centerLine {
+    fill: #fff;
+    stroke: #000;
+    stroke-width: 1.0px;
+    stroke-dasharray: 3,3;
 }

@@ -121,7 +121,7 @@ class StackMirror():
                 speedsPerLine[line] = []
                 speedsPerLine[line].extend(speedsPerBus[b])
 
-            speedsPerLine["all"].extends(speedsPerBus[b])
+            speedsPerLine["all"].extend(speedsPerBus[b])
 
         return speedsPerLine
 
@@ -390,16 +390,17 @@ class StackMirror():
             speedByLine = self.computeSpeedPerLine(records)
             outputJson[count] = {}
             for l in speedByLine:
-                if speedByLine[l] >= 1.0:
-                    outputJson[count][l] = {}
-                    outputJson[count][l]['count'] = len(speedByLine[l])
-                    outputJson[count][l]['mean'] = numpy.mean(speedByLine[l])
-                    outputJson[count][l]['median'] = numpy.median(speedByLine[l])
-                    outputJson[count][l]['std'] = numpy.std(speedByLine[l])
-                    outputJson[count][l]['min'] = numpy.min(speedByLine[l])
-                    outputJson[count][l]['max'] = numpy.max(speedByLine[l])
-                    outputJson[count][l]['percentile25th'] = numpy.percentile(speedByLine[l],25)
-                    outputJson[count][l]['percentile75th'] = numpy.percentile(speedByLine[l],75)
+                if len(speedByLine) > 0:
+                    if numpy.mean(speedByLine[l]) > 1.0:
+                        outputJson[count][l] = {}
+                        outputJson[count][l]['count'] = len(speedByLine[l])
+                        outputJson[count][l]['mean'] = numpy.mean(speedByLine[l])
+                        outputJson[count][l]['median'] = numpy.median(speedByLine[l])
+                        outputJson[count][l]['std'] = numpy.std(speedByLine[l])
+                        outputJson[count][l]['min'] = numpy.min(speedByLine[l])
+                        outputJson[count][l]['max'] = numpy.max(speedByLine[l])
+                        outputJson[count][l]['percentile25th'] = numpy.percentile(speedByLine[l],25)
+                        outputJson[count][l]['percentile75th'] = numpy.percentile(speedByLine[l],75)
             count+=1
 
         return outputJson

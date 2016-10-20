@@ -120,11 +120,17 @@ bus.PlotCard = function(plotType){
     }
 
     function updateChart(line) {
-        var filteredData = {}
-        filteredData[0] = data1.filter(function(d) {return d.line == line});
-        filteredData[1] = data2.filter(function(d) {return d.line == line});
 
-        chart.update(filteredData);
+        if(plotType === "barchart") {
+            var filteredData = {}
+            filteredData[0] = data1.filter(function(d) {return d.line == line});
+            filteredData[1] = data2.filter(function(d) {return d.line == line});
+
+            chart.update(filteredData);
+        }
+        else {
+            createChart(line);
+        }
     }
 
     function parseLine(d) {

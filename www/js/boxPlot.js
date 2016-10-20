@@ -9,6 +9,13 @@ bus.BoxPlot = function(){
     var chart = undefined;
     var cdim  = undefined;
     var parent = undefined;
+    var y = undefined;
+    var n = 0;
+    var selBox = undefined;
+    var selMedian = undefined;
+    var selLine = undefined;
+    var selWhiskerMin = undefined;
+    var selWhiskerMax = undefined;
 
     // chart size
     var margin = {top: 20, right: 30, bottom: 30, left: 40};
@@ -23,111 +30,122 @@ bus.BoxPlot = function(){
     var exports = {};
 
     // creates the dc.js chart
-    function createChart(parentDiv,data1,data2){
-        console.log(data1,data2);
-        var m = 2;
-        var n = 0;
-        for(var i=0; i<data1.length; i++) {
-            n = Math.max(n,data1[i].segment);
-        }
-        for(var i=0; i<data2.length; i++) {
-            n = Math.max(n,data2[i].segment);
+    function createChart(parentDiv,data){
+        console.log(data);
+        var m = 2; // number of cases
+        n = 0; // number of segments
+
+        // find number of segments
+        for(var i=0; i<m; i++) {
+            for(var j=0; j<data[i].length; j++) {
+                data[i][j].caseId = i; // used for update
+                n = Math.max(n,data[i][j].segment);
+            }
         }
         n = n+1;
 
-        var data = d3.range(m).map(function() {return d3.range(n).map(function(){return 0})});
-        var count = d3.range(n).map(function(){return 0});
-        for(var i=0; i<data1.length; i++) {
-            var segment = data1[i].segment;
-            var value = data1[i].mean;
-            data[0][segment]+=value;
-            count[segment]++;
-        }
-        for(var i=0; i<data[0].length; i++) {
-            if(count[i] > 0)
-                data[0][i] /= count[i];
-        }
 
-        count = d3.range(n).map(function(){return 0});
-        for(var i=0; i<data2.length; i++) {
-            var segment = data2[i].segment;
-            var value = data2[i].mean;
-            data[1][segment]+=value;
-            count[segment]++;
-        }
-        for(var i=0; i<data[1].length; i++) {
-            if(count[i] > 0)
-                data[1][i] /= count[i];
-        }
+        y = d3.scale.linear()
+            .domain([0, 50])
+            .range([height, 0]);
 
-        // var m = 2;
-        // var n = 10;
-        // var data = d3.range(m).map(function() { return d3.range(n).map(function(){return 80*Math.random();}); });
-        // console.log(data);
+        var x0 = d3.scale.ordinal()
+            .domain(d3.range(n))
+            .rangeBands([0, width], .2);
 
-        // var y = d3.scale.linear()
-        //     .domain([0, 50])
-        //     .range([height, 0]);
+        var x1 = d3.scale.ordinal()
+            .domain(d3.range(m))
+            .rangeBands([0, x0.rangeBand()]);
 
-        // var x0 = d3.scale.ordinal()
-        //     .domain(d3.range(n))
-        //     .rangeBands([0, width], .2);
+        var z = d3.scale.category10();
 
-        // var x1 = d3.scale.ordinal()
-        //     .domain(d3.range(m))
-        //     .rangeBands([0, x0.rangeBand()]);
+        var xAxis = d3.svg.axis()
+            .scale(x0)
+            .orient("bottom");
 
-        // var z = d3.scale.category10();
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left");
 
-        // var xAxis = d3.svg.axis()
-        //     .scale(x0)
-        //     .orient("bottom");
+        parent = parentDiv.append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+        var svg = parent.append("svg:g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        // var yAxis = d3.svg.axis()
-        //     .scale(y)
-        //     .orient("left");
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis);
 
-        // parent = parentDiv.append("svg")
-        //     .attr("width", width + margin.left + margin.right)
-        //     .attr("height", height + margin.top + margin.bottom)
-        // var svg = parent.append("svg:g")
-        //     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
 
-        // svg.append("g")
-        //     .attr("class", "y axis")
-        //     .call(yAxis);
+        sel = svg.append("g").selectAll("g")
+            .data(d3.range(n))
+          .enter().append("g")
+            .style("fill", function(d, i) { return z(i); })
+            .attr("transform", function(d, i) { return "translate(" + x1(i) + ",0)"; })
+          .selectAll("rect")
+            .data(function(d,i) {
+                return data[i%2];
+            });
 
-        // svg.append("g")
-        //     .attr("class", "x axis")
-        //     .attr("transform", "translate(0," + height + ")")
-        //     .call(xAxis);
+        // box
+        sel.enter().append("rect")
+            .attr("caseId", function(d) {return d.caseId})
+            .attr("segmentId", function(d) {return d.segment})
+            .attr("class", "caseRect")
+            .attr("width", x1.rangeBand())
+            .attr("height", function(d) {return y(d.percentile25th)-y(d.percentile75th);})
+            .attr("x", function(d, i) { return x0(i); })
+            .attr("y", function(d) { return y(d.percentile75th); })
+            .on("mouseover", function(d,i) {
+                if(bus.map.highlightSegment(i)) {
+                    svg.selectAll("rect").style("opacity",0.5);
+                    d3.select(this).style("opacity",1.0);
+                }
+            })
+            .on("mouseout", function() {
+                svg.selectAll("rect").style("opacity",1.0);
+                bus.map.highlightSegment(-1);
+            });
 
-        // svg.append("g").selectAll("g")
-        //     .data(data)
-        //   .enter().append("g")
-        //     .style("fill", function(d, i) { return z(i); })
-        //     .attr("transform", function(d, i) { return "translate(" + x1(i) + ",0)"; })
-        //   .selectAll("rect")
-        //     .data(function(d) { return d; })
-        //   .enter().append("rect")
-        //     .attr("width", x1.rangeBand())
-        //     .attr("height", function(d) {return height-y(d);})
-        //     .attr("x", function(d, i) { return x0(i); })
-        //     .attr("y", function(d) { return y(d); })
-        //     .on("mouseover", function(d,i) {
-        //         if(bus.map.highlightSegment(i)) {
-        //             svg.selectAll("rect").style("opacity",0.5);
-        //             d3.select(this).style("opacity",1.0);
-        //         }
-        //     })
-        //     .on("mouseout", function() {
-        //         svg.selectAll("rect").style("opacity",1.0);
-        //         bus.map.highlightSegment(-1);
-        //     });
+        // median line
+        sel.enter().append("line")
+            .attr("class", "caseLine median")
+            .attr("x1", function(d, i) { return x0(i); })
+            .attr("y1", function(d){return y(d.median)})
+            .attr("x2", function(d, i) { return x0(i) + x1.rangeBand(); })
+            .attr("y2", function(d){return y(d.median)});
+
+        // whiskers
+        sel.enter().append("line")
+            .attr("class", "caseLine whiskerMax")
+            .attr("x1", function(d, i) { return x0(i); })
+            .attr("y1", function(d){return y(d.max)})
+            .attr("x2", function(d, i) { return x0(i) + x1.rangeBand(); })
+            .attr("y2", function(d){return y(d.max)});
+        sel.enter().append("line")
+            .attr("class", "caseLine whiskerMin")
+            .attr("x1", function(d, i) { return x0(i); })
+            .attr("y1", function(d){return y(d.min)})
+            .attr("x2", function(d, i) { return x0(i) + x1.rangeBand(); })
+            .attr("y2", function(d){return y(d.min)});
+
+        // center line
+        sel.enter().append("line")
+            .attr("class", "centerLine")
+            .attr("x1", function(d, i) { return x0(i) + x1.rangeBand()/2; })
+            .attr("y1", function(d){return y(d.min)})
+            .attr("x2", function(d, i) { return x0(i) + x1.rangeBand()/2; })
+            .attr("y2", function(d){return y(d.max)});
+
 
         svg.append("text")
-            .text("Avg. speed (mph)")
-            .attr("x", 0)
+            .text("Speed (mph)")
+            .attr("x", margin.left/2)
             .attr("y", -margin.top/2)
             .attr("text-anchor", "middle")
 

@@ -312,14 +312,14 @@ bus.Map = function(){
         return color;
     }
 
-    function popupContent(segmentId, json, value) {
-        value = Math.round(value * 100) / 100;
-        var text = ("<b>Segment "+segmentId+"<br>Avg:</b> <div style=\"color:"+getColor(value)+"\">"+value+" km/h</div>");
+    function popupContent(segmentId, json) {
+        var value = Math.round(json["all"].mean * 100) / 100;
+        var text = ("<b>Segment "+segmentId+"<br>Mean:</b> <div style=\"color:"+getColor(value)+"\">"+value+" mph</div>");
         for(var l in json) {
-            var aux = Math.round(json[l] * 100) / 100;
-            var color = getColor(aux);
+            var value = Math.round(json[l].mean * 100) / 100;
+            var color = getColor(value);
             
-            text += ("<b>"+l+":</b> <div style=\"color:"+color+"\">"+aux+" km/h</div>"); 
+            text += ("<b>"+l+":</b> <div style=\"color:"+color+"\">"+value+" mph</div>"); 
         }
         return text;
     };
@@ -356,32 +356,24 @@ bus.Map = function(){
         // }
         var count = 0;
         bus.map.paths['withoutBuffer'].eachLayer(function(layer) {
-            // var value = Math.random();
-            var value = 0;
-            var numLines = Object.keys(json[count]).length;
-            if(numLines > 0) {
-                for(var l in json[count]) {
-                    value += json[count][l];
-                }
-                value = value / numLines;
-                console.log(layer, value, getColor(value));
+            if(json[count]["all"] != undefined) {
+                console.log(json[count]["all"].mean);
                 layer.setStyle(styleSpeed);
-                layer.setStyle({color: getColor(value)});
-                layer.feature.properties.speeds = json[count];
-                layer.feature.style = {color: getColor(value)};
+                layer.setStyle({color: getColor(json[count]["all"].mean)});
+                layer.feature.properties.speeds = json;
+                layer.feature.style = {color: getColor(json[count]["all"].mean)};
 
                 var customOptions = {
                     'maxHeight': 500,
                     'closeOnClick': true
                 }
-                layer.bindPopup(popupContent(count, json[count], value),customOptions);
-                count++;  
+                layer.bindPopup(popupContent(count, json[count]),customOptions);
             }
             else {
                 layer.setStyle(styleSpeed);
                 layer.setStyle({color: "#FFFFFF"});
-                count++;  
             }
+            count++;
             
         });
     }
