@@ -447,11 +447,12 @@ class StackMirror():
         for f in features:
             cursor = self.getRecords(f, filters, selectionMode)
             records = list(cursor)
-            speedByLine = self.computeSpeedPerLine(records)
+            byBus = self.computeSpeedsByBus(records)
+            speedByLine = self.aggregateByLine(byBus)
             outputJson[count] = {}
             for l in speedByLine:
                 if len(speedByLine) > 0:
-                    if numpy.mean(speedByLine[l]) > 1.0:
+                    if len(speedByLine[l]) >= 1.0 and numpy.mean(speedByLine[l]) > 1.0:
                         outputJson[count][l] = {}
                         outputJson[count][l]['count'] = len(speedByLine[l])
                         outputJson[count][l]['mean'] = numpy.mean(speedByLine[l])
