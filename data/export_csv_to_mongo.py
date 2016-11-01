@@ -32,6 +32,7 @@ def readFile(fileName, numLines, dbName, collectionName, erase):
         tokens = line.rstrip().split(',')
 
         dateObj = datetime.strptime(tokens[0][0:-6], '%Y-%m-%dT%H:%M:%S.%f')
+        # dateObj = datetime.strptime(tokens[0][1:-7], '%Y-%m-%dT%H:%M:%S.%f')
         hour = dateObj.hour
         dayOfWeek = dateObj.weekday()
         year = dateObj.year

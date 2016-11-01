@@ -164,7 +164,7 @@ bus.BoxPlot = function(){
         svg.append("defs").append("style").attr("type", "text/css").text("path {fill: none; stroke: #000000} text {font: 12px sans-serif}");
     }
 
-    exports.saveImage = function(){
+    exports.saveImage = function(filename){
         console.log("Saving image");
         var html = parent.attr("version", 1.1)
             .attr("xmlns", "http://www.w3.org/2000/svg")
@@ -184,7 +184,7 @@ bus.BoxPlot = function(){
             var canvasdata = canvas.toDataURL("image/png");
 
             var a = document.createElement("a");
-            a.download = "sample.png";
+            a.download = filename;
             a.href = canvasdata;
             a.click();
         };

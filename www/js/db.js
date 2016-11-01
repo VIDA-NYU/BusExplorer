@@ -12,26 +12,46 @@ bus.Db = function (){
 
     };
 
-    function getFilters(){
+    function getFilters(getAsString){
+
+        if(getAsString == undefined)
+            getAsString = false;
+
+
     	var data = {
-			dayOfWeek:bus.filterCard.getDayOfWeek(),
-			month:bus.filterCard.getMonth(),
-			year:bus.filterCard.getYear(),
-			startHour:bus.filterCard.getStartHour(),
-			endHour:bus.filterCard.getEndHour(),
-			ids:bus.filterCard.getIds(),
-			lines:bus.filterCard.getLines(),
-            direction:bus.filterCard.getDirection(),
-			path:bus.filterCard.getPath(),
+			dayOfWeek:bus.filterCard.getDayOfWeek(getAsString),
+			month:bus.filterCard.getMonth(getAsString),
+			year:bus.filterCard.getYear(getAsString),
+			startHour:bus.filterCard.getStartHour(getAsString),
+			endHour:bus.filterCard.getEndHour(getAsString),
+			ids:bus.filterCard.getIds(getAsString),
+			lines:bus.filterCard.getLines(getAsString),
+            direction:bus.filterCard.getDirection(getAsString),
+			path:bus.filterCard.getPath(getAsString),
 			selectionMode:bus.map.selectionMode,
-            aggregateByLine:bus.filterCard.getAggregateByLine()
+            aggregateByLine:bus.filterCard.getAggregateByLine(getAsString)
         };
         return data;
+    }
+
+    function getName(){
+        var data = getFilters(true);
+        var name = "DayWeek."+data.dayOfWeek
+                  +",Month."+data.month
+                  +",Year."+data.year
+                  +",StartHour."+data.startHour
+                  +",EndHour."+data.endHour
+                  +",Ids."+data.ids
+                  +",Lines."+data.lines
+                  +",Dir."+data.direction
+                  +",SelectionMode."+data.selectionMode;
+        return name;
     }
 
     exports.getSpeed = function(callAfter){
 
         var data = getFilters();
+        var name = "speed,"+getName();
         
         $.ajax({
             type: "POST",
@@ -44,7 +64,8 @@ bus.Db = function (){
                 callAfter();
             },
             success: function(data) {
-                download(data,"export.csv","text/plain");
+                data = name + "\n" + data
+                download(data,name+".csv","text/plain");
                 callAfter();
             }, 
         });
@@ -72,9 +93,32 @@ bus.Db = function (){
         });
     };
 
+    exports.showDwellTime = function(callAfter){
+
+        var data = getFilters();
+        
+        $.ajax({
+            type: "POST",
+            url: "getDwellTime",
+            contentType: "application/json",
+            dataType: "text",
+            data: JSON.stringify(data),
+            error: function() {
+                alert("Error getDwellTime");
+                callAfter();
+            },
+            success: function(data) {
+                data = JSON.parse(data);
+                bus.map.showDwellTime(data);
+                callAfter();
+            }, 
+        });
+    };
+
     exports.getPings = function(callAfter){
 
     	var data = getFilters();
+        var name = "pings,"+getName();
         
     	$.ajax({
     		type: "POST",
@@ -87,7 +131,8 @@ bus.Db = function (){
     			callAfter();
     		},
     		success: function(data) {
-                download(data,"export.csv","text/plain");
+                data = name + "\n" + data
+                download(data,name+".csv","text/plain");
     			callAfter();
     		}, 
         });
@@ -96,6 +141,7 @@ bus.Db = function (){
     exports.getTrips = function(callAfter) {
 
     	var data = getFilters();
+        var name = "trips,"+getName();
     	
     	$.ajax({
     		type: "POST",
@@ -108,7 +154,8 @@ bus.Db = function (){
     			callAfter();
     		},
     		success: function(data) {
-                download(data,"export.csv","text/plain");
+                data = name + "\n" + data
+                download(data,name+".csv","text/plain");
     			callAfter();
     		}, 
         });

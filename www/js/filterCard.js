@@ -227,6 +227,7 @@ bus.FilterCard = function(){
                 var type = path.features[0].geometry.type;
 
                 if(type === "LineString") {
+                    bus.map.clearPaths();
                     bus.map.changeSelectionMode("segment");
                     bus.map.addGeoJson(path, "withoutBuffer", false);
                     path = calculateBuffer(path);
@@ -236,8 +237,10 @@ bus.FilterCard = function(){
                     $("#filterCheckbox").find("input").attr("disabled",false);
                     $("#filterCheckbox").find("input").prop("checked",false);
                     $("#showSpeedSelector").attr("disabled", false);
+                    d3.select(".filter").transition().style("height", "800px");
                 }
                 else if(type === "Point"){
+                    bus.map.clearPaths();
                     bus.map.changeSelectionMode("node");
                     bus.map.addGeoJson(path, "filter", false, true);
                     bus.map.showFilterBuffer(true);
@@ -245,6 +248,8 @@ bus.FilterCard = function(){
                     $("#filterCheckbox").find("input").prop("checked",true);
                     $("#filterCheckbox").find("input").attr("disabled",true);
                     $("#showSpeedSelector").attr("disabled", true);
+                    d3.select(".filter").transition().style("height", "820px");
+
                 }
             }
         });
@@ -254,13 +259,11 @@ bus.FilterCard = function(){
         $("#filterCheckbox").change(function () {
             if ($("#filterCheckbox").find("input").is(":checked")) {
                 $("#filterBufferSizeSelector").collapse("show");
-                var curHeight = parseInt(d3.select(".filter").style("height"));
-                d3.select(".filter").transition().style("height", (curHeight+20)+"px");
+                d3.select(".filter").transition().style("height", "820px");
                 bus.map.showFilterBuffer(true);
             } else {
                 $("#filterBufferSizeSelector").collapse("hide");
-                var curHeight = parseInt(d3.select(".filter").style("height"));
-                d3.select(".filter").transition().style("height", (curHeight-20)+"px");
+                d3.select(".filter").transition().style("height", "800px");
                 bus.map.showFilterBuffer(false);
             }
         });
@@ -334,6 +337,8 @@ bus.FilterCard = function(){
 
         var checkbox = bus.UiParts.CheckBox(cardDiv, "aggregationCheckbox", dropClass, "Aggregate by line");
         $("#aggregationCheckbox").find("input").prop("checked",true);
+
+        cardDiv.append("hr");
     }
 
     function exportSpeedGeoJSONSelector(propId){
@@ -366,6 +371,21 @@ bus.FilterCard = function(){
                 $("#showSpeedSelector").button("reset");
             }
             bus.db.showSpeed(callAfter);
+        });
+    }
+
+    function showDwellTimeSelector(propId){
+        var buttonId = "showDwellTimeSelector";
+
+        var dropClass = propId==0?"":"leftSpace";
+        var btn = bus.UiParts.ButtonText(cardDiv, buttonId, "Show dwell time", dropClass);
+        // add callback
+        btn.on("click", function(){
+            $("#showDwellTimeSelector").button("loading");
+            var callAfter = function() {
+                $("#showDwellTimeSelector").button("reset");
+            }
+            bus.db.showDwellTime(callAfter);
         });
     }
 
@@ -414,13 +434,20 @@ bus.FilterCard = function(){
         exportPingCSVSelector(0);
         exportTripCSVSelector(1);
         exportSpeedCSVSelector(1);
-        showSpeedSelector(1);
         exportSpeedGeoJSONSelector(1);
-
+        showSpeedSelector(1);
+        showDwellTimeSelector(1);
     };
 
-    exports.getDayOfWeek = function(){
+    exports.getDayOfWeek = function(returnString){
+
+        if(returnString == undefined)
+            returnString = false;
+
         var val = $("#daySelector").children("button").text();
+        if(returnString)
+            return val;
+        
         switch(val) {
             case "All":
                 return -1;
@@ -442,22 +469,43 @@ bus.FilterCard = function(){
         return -1;
     };
 
-    exports.getMonth = function(){
+    exports.getMonth = function(returnString){
+
+        if(returnString == undefined)
+            returnString = false;
+
         var month = $("#monthSelector").children("button").text();
+        if(returnString)
+            return month;
+
         if(month === "All")
             return -1;
         return parseInt(month);
     };
 
-    exports.getYear = function(){
+    exports.getYear = function(returnString){
+
+        if(returnString == undefined)
+            returnString = false;
+
         var year = $("#yearSelector").children("button").text();
+        if(returnString)
+            return year;
+
         if(year === "All")
             return -1;
         return parseInt(year);
     };
 
-    exports.getDirection = function(){
+    exports.getDirection = function(returnString){
+
+        if(returnString == undefined)
+            returnString = false
+
         var dir = $("#directionSelector").children("button").text();
+        if(returnString)
+            return dir;
+
         if(dir === "All")
             return -1;
         return parseInt(dir);

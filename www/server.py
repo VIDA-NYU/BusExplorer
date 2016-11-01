@@ -34,7 +34,7 @@ class StackMirror():
         startHour = json['startHour']
         endHour   = json['endHour']
         if(startHour != -1 and endHour != -1):
-            filters.append({"hour": {"$gte":startHour,"$lte":startHour}})
+            filters.append({"hour": {"$gte":startHour,"$lte":endHour}})
         elif(startHour == -1 and endHour != -1):
             filters.append({"hour": {"$lte":startHour}})
         elif(startHour != -1 and endHour == -1):
@@ -187,7 +187,7 @@ class StackMirror():
         medianTime = {}
         minTime = {}
         for b in times:
-            minTime[b] = numpy.min(times[b])
+            minTime[b] = min(times[b])
 
             for i in range(0,len(times[b])):
                 times[b][i] = times[b][i] - minTime[b]
@@ -245,7 +245,7 @@ class StackMirror():
                 formatted = 'segment,line,count,mean,median,min,max,percentile25th,percentile75th\n'
                 for l in byLine:
                         formatted += "%d,%s,%d,%d,%d,%d,%d,%d,%d\n"%(0,l,len(byLine[l]),numpy.mean(byLine[l]).item().total_seconds(),numpy.median(byLine[l]).item().total_seconds(),\
-                            numpy.min(byLine[l]).item().total_seconds(),numpy.max(byLine[l]).item().total_seconds(),\
+                            min(byLine[l]).item().total_seconds(),max(byLine[l]).item().total_seconds(),\
                             numpy.percentile(byLine[l],25).item().total_seconds(),numpy.percentile(byLine[l],75).item().total_seconds())
 
 
@@ -289,9 +289,10 @@ class StackMirror():
                 byLine = self.aggregateByLine({"times": tripTimes, "lines": lines}, "times")
                 formatted = 'segment,line,count,mean,median,min,max,percentile25th,percentile75th\n'
                 for l in byLine:
-                        formatted += "%d,%s,%d,%d,%d,%d,%d,%d,%d\n"%(0,l,len(byLine[l]),numpy.mean(byLine[l]).item().total_seconds(),numpy.median(byLine[l]).item().total_seconds(),\
-                            numpy.min(byLine[l]).item().total_seconds(),numpy.max(byLine[l]).item().total_seconds(),\
-                            numpy.percentile(byLine[l],25).item().total_seconds(),numpy.percentile(byLine[l],75).item().total_seconds())
+                        print byLine[l]
+                        formatted += "%d,%s,%d,%d,%d,%d,%d,%d,%d\n"%(0,l,len(byLine[l]),abs(numpy.mean(byLine[l])),abs(numpy.median(byLine[l])),\
+                            abs(min(byLine[l])),abs(max(byLine[l])),\
+                            abs(numpy.percentile(byLine[l],25)),abs(numpy.percentile(byLine[l],75)))
 
             else:
                 formatted = 'BusID,PublishedLineName,DirectionRef,FirstPing,LastPing\n'
@@ -366,7 +367,7 @@ class StackMirror():
                     for l in speedByLine:
                         if len(speedByLine[l]) >= 1.0:
                             formatted += "%d,%s,%d,%f,%f,%f,%f,%f,%f\n"%(count,l,len(speedByLine[l]),numpy.mean(speedByLine[l]),numpy.median(speedByLine[l]),\
-                                numpy.min(speedByLine[l]),numpy.max(speedByLine[l]),numpy.percentile(speedByLine[l],25),numpy.percentile(speedByLine[l],75))
+                                min(speedByLine[l]),max(speedByLine[l]),numpy.percentile(speedByLine[l],25),numpy.percentile(speedByLine[l],75))
                     count+=1
                 else:
                     byBus = self.computeSpeedsByBus(records)
@@ -419,8 +420,9 @@ class StackMirror():
                     speedByLine = self.aggregateByLine({'speeds': speedsByBus, 'lines': linesByBus})
 
                     for l in speedByLine:
-                        formatted += "%d,%s,%d,%f,%f,%f,%f,%f,%f\n"%(i-1,l,len(speedByLine[l]),numpy.mean(speedByLine[l]),numpy.median(speedByLine[l]),\
-                            numpy.min(speedByLine[l]),numpy.max(speedByLine[l]),numpy.percentile(speedByLine[l],25),numpy.percentile(speedByLine[l],75))
+                        if len(speedByLine[l]) > 0:
+                            formatted += "%d,%s,%d,%f,%f,%f,%f,%f,%f\n"%(i-1,l,len(speedByLine[l]),numpy.mean(speedByLine[l]),numpy.median(speedByLine[l]),\
+                                min(speedByLine[l]),max(speedByLine[l]),numpy.percentile(speedByLine[l],25),numpy.percentile(speedByLine[l],75))
 
                 else:
                     for b in speedsByBus:
@@ -460,10 +462,56 @@ class StackMirror():
                         outputJson[count][l]['mean'] = numpy.mean(speedByLine[l])
                         outputJson[count][l]['median'] = numpy.median(speedByLine[l])
                         outputJson[count][l]['std'] = numpy.std(speedByLine[l])
-                        outputJson[count][l]['min'] = numpy.min(speedByLine[l])
-                        outputJson[count][l]['max'] = numpy.max(speedByLine[l])
+                        outputJson[count][l]['min'] = min(speedByLine[l])
+                        outputJson[count][l]['max'] = max(speedByLine[l])
                         outputJson[count][l]['percentile25th'] = numpy.percentile(speedByLine[l],25)
                         outputJson[count][l]['percentile75th'] = numpy.percentile(speedByLine[l],75)
+            count+=1
+
+        return outputJson
+
+
+##################################################################################
+#### Server: return requested dwell time
+##################################################################################
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def getDwellTime(self):
+        inputJson = cherrypy.request.json
+        filters  = self.getFilters(inputJson)
+        features = inputJson['path']['features']
+        selectionMode = inputJson['selectionMode']
+
+        outputJson = {}
+        count = 0
+        for f in features:
+            cursor = self.getRecords(f, filters, selectionMode)
+            records = list(cursor)
+
+            # for now, considering dwell time just as difference between first and last ping. need to improve it
+            times = {}
+            buses = {}
+            for e in records:
+                b = e['DatedVehicleJourneyRef']
+                if b in times:
+                    times[b].append(numpy.datetime64(e['RecordedAtTime']))
+                    buses[b].append(e)
+                else:
+                    times[b] = []
+                    times[b].append(numpy.datetime64(e['RecordedAtTime']))
+                    buses[b] = []
+                    buses[b].append(e)
+
+            sumDwellTime = 0.0
+            countValid = 0
+            for b in times:
+                dwellTime = (max(times[b]) - min(times[b])).astype(int) / 1000000.0
+                if(dwellTime > 0):
+                    sumDwellTime += dwellTime
+                    countValid += 1
+
+            outputJson[count] = ((sumDwellTime / countValid))
             count+=1
 
         return outputJson

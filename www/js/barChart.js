@@ -111,7 +111,7 @@ bus.BarChart = function(){
             });
 
         svg.append("text")
-            .text("Mean")
+            .text("Mean (mph)")
             .attr("x", margin.left/2)
             .attr("y", -margin.top/2)
             .attr("text-anchor", "middle")
@@ -156,7 +156,7 @@ bus.BarChart = function(){
         });
     }
 
-    exports.saveImage = function(){
+    exports.saveImage = function(filename){
         console.log("Saving image");
         var html = parent.attr("version", 1.1)
             .attr("xmlns", "http://www.w3.org/2000/svg")
@@ -176,7 +176,7 @@ bus.BarChart = function(){
             var canvasdata = canvas.toDataURL("image/png");
 
             var a = document.createElement("a");
-            a.download = "sample.png";
+            a.download = filename;
             a.href = canvasdata;
             a.click();
         };

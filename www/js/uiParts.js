@@ -144,7 +144,7 @@ bus.UiParts.File = function(parentDiv, fileId, fileClass, text){
 
     // creates the drop down
     textDiv.append("text");
-    textDiv.append("br");
+    // textDiv.append("br");
 
     var fileDiv = parentDiv.append("input")
             .attr("type", "file")
@@ -153,7 +153,32 @@ bus.UiParts.File = function(parentDiv, fileId, fileClass, text){
     $("#"+fileId).filestyle({badge: false, buttonName: "btn-primary"});
 
     // returns the element
-    return fileDiv;
+    return textDiv;
+};
+
+bus.UiParts.Popup = function(parentDiv, popupId, fileClass, text, title, content){
+
+    var popupDiv = parentDiv.append("a")
+        .attr("id", popupId+"text")
+        .text(text)
+        .attr("href","#")
+        .attr("data-toggle", "popover")
+        // .attr("data-placement", "top")
+        .attr("title", title)
+        .attr("data-content", content);
+
+    // button left space
+    if(fileClass)
+        textDiv.classed(fileClass, true);
+
+    // enable
+    $("#"+popupId+"text").popover({
+        html: false,
+        content: content
+    });
+
+    // returns the element
+    return popupDiv;
 };
 
 bus.UiParts.InputFilter = function(parentDiv, filterId){
@@ -179,7 +204,7 @@ bus.UiParts.LineFilter = function(parentDiv, filterId){
         .attr("id", filterId+"Area")
         .attr("class", "form-control searchBusLine")
         .attr("cols", 20)
-        .attr("rows", 3);
+        .attr("rows", 2);
 
     return div;
 };

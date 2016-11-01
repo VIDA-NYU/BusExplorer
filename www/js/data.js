@@ -69,7 +69,13 @@ bus.Data = function (){
         if(bus.selectedLionName !== "") {
             bus.loadedLions.push(bus.selectedLionName);
             $.getJSON("/json/"+bus.selectedLionName+".geojson", function(json) {
-                bus.map.addGeoJson(json, bus.selectedLionName);
+                if(bus.selectedLionName === "stops") {
+                    bus.map.addGeoJsonStops(json, bus.selectedLionName);
+                }
+                else {
+                    bus.map.addGeoJson(json, bus.selectedLionName);
+                }
+                
                 bus.selectedLionName = "";
             });
         }

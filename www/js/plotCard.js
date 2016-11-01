@@ -16,6 +16,10 @@ bus.PlotCard = function(plotType){
     var drop = undefined;
     var data1 = undefined;
     var data2 = undefined;
+    var filename1 = undefined;
+    var filename2 = undefined;
+    var filters1 = undefined;
+    var filters2 = undefined;
 
     // exported api
     var exports = {};
@@ -102,6 +106,7 @@ bus.PlotCard = function(plotType){
         chartDiv.style("padding","5px")
             .style("margin-top", "0px");
 
+        var filename = filename1.replace(/\.[^/.]+$/, "")+"_"+filename2.replace(/\.[^/.]+$/, "");
         if(plotType === "barchart")
             chart = new bus.BarChart();
         else if(plotType === "boxplot")
@@ -112,10 +117,10 @@ bus.PlotCard = function(plotType){
         filteredData[0] = data1.filter(function(d) {return d.line == line});
         filteredData[1] = data2.filter(function(d) {return d.line == line});
 
-        chart.create(chartDiv,filteredData);
+        chart.create(chartDiv,filteredData, filename);
 
         saveBtn.on('click', function(){
-            chart.saveImage();
+            chart.saveImage(filename+".png");
         });
     }
 
@@ -153,15 +158,22 @@ bus.PlotCard = function(plotType){
         var dropClass = propId==0?"":"leftSpace";
 
         var file1 = bus.UiParts.File(cardDiv,"plotFileInput1_"+bus.globalCardId,dropClass, "Select file: ");
-        var file2 = bus.UiParts.File(cardDiv,"plotFileInput2_"+bus.globalCardId,dropClass, "Select file: ");
+        
+        var file2 = bus.UiParts.File(cardDiv,"plotFileInput2_"+bus.globalCardId, dropClass, "Select file: ");
 
         // createChart();
 
+        var cardId = bus.globalCardId;
         $("#plotFileInput1_"+bus.globalCardId).change(function() {
             var reader = new FileReader();
+            filename1 = this.files[0].name;
             reader.readAsText(this.files[0]);
             reader.onload = function() {
-                data1 = d3.csv.parse(reader.result, function(d) {
+                filters1 = reader.result.substring(0,reader.result.indexOf("\n"));
+                var popup1 = bus.UiParts.Popup(file1, "plotPopup1_"+cardId, dropClass, "(+)", "File 1 filters", filters1.replace(/,/g,"\n"));
+
+                var csv = reader.result.substring(reader.result.indexOf("\n")+1);
+                data1 = d3.csv.parse(csv, function(d) {
                     return parseLine(d);
                 });
                 if(data1 != undefined && data2 != undefined) {
@@ -173,9 +185,14 @@ bus.PlotCard = function(plotType){
         d3.select("[for=plotFileInput2_"+bus.globalCardId+"]").attr("style", "background-color: rgb(255, 127, 14); border-color: rgb(215, 127, 14)")
         $("#plotFileInput2_"+bus.globalCardId).change(function() {
             var reader = new FileReader();
+            filename2 = this.files[0].name;
             reader.readAsText(this.files[0]);
             reader.onload = function() {
-                data2 = d3.csv.parse(reader.result, function(d) {
+                filters2 = reader.result.substring(0,reader.result.indexOf("\n"));
+                var popup2 = bus.UiParts.Popup(file2, "plotPopup2_"+cardId, dropClass, "(+)", "File 1 filters", filters2.replace(/,/g,"\n"));
+
+                var csv = reader.result.substring(reader.result.indexOf("\n")+1);
+                data2 = d3.csv.parse(csv, function(d) {
                     return parseLine(d);
                 });
                 if(data1 != undefined && data2 != undefined) {
@@ -213,7 +230,6 @@ bus.PlotCard = function(plotType){
 
         // card menu
         fileSelector(0);
-
         
    };
 

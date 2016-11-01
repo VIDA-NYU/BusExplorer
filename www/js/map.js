@@ -15,8 +15,15 @@ bus.Map = function(){
          "opacity": 1.0,
          "fillOpacity": 1.0,
          "color": "#ff780f"
-    }
+    };
+    var styleStop = {
+        "weight": 1,
+        "opacity": 1.0,
+        "fillOpacity": 1.0,
+        "color": "#ff780f"
+    };
     var styleDefault = {
+        "weight": 8,
         "opacity": 0.3,
         "fillOpacity": 0.3,
         "color": "#3388FF"
@@ -251,6 +258,28 @@ bus.Map = function(){
         });
     };
 
+    exports.onEachFeatureStop = function(feature, layer) {
+        layer.on({
+            click: function(e) {
+                
+                // avoid click being called twice for same click
+                if(lastClick == undefined || (lastClick.x != e.layerPoint.x && lastClick.y != e.layerPoint.y)) {
+                    if(bus.map.selectionMode === "segment") {
+                        console.log("adding segment");
+                        bus.map.addSegment(e,feature,layer);
+                    }
+                    else if(bus.map.selectionMode === "node") {
+                        console.log("adding node");
+                        bus.map.addNode(e,feature,layer);
+                    }
+                    lastClick = e.layerPoint;
+                }
+
+                
+            }
+        });
+    };
+
     exports.addGeoJson = function(geojson, name, enableEachFeature, hidden){
 
         if(enableEachFeature == undefined) enableEachFeature = true;
@@ -287,6 +316,21 @@ bus.Map = function(){
         }
     };
 
+    exports.addGeoJsonStops = function(geojson, name){
+
+        var style = styleStop;
+        var geo = L.geoJSON(geojson, {
+            style: style,
+            onEachFeature: bus.map.onEachFeatureStop,
+            pointToLayer: function (feature, latlng) {
+                return L.circle(latlng, 10, style);
+            }
+        }).addTo(map);
+        geo.bringToBack();
+        bus.map.paths[name] = geo;
+        
+    };
+
     exports.removeGeoJSON = function(name){
         bus.map.paths[name].remove();
         for(var p in bus.map.highlightedPaths)
@@ -303,10 +347,9 @@ bus.Map = function(){
         bus.map.highlightedLines[lineName] = line;
     };
 
-    function getColor(value) {
-        value = value / 50.0;
+    function getColor(value, invert) {
         if(value > 0)
-            color = colorScale.getHexColor(value);
+            color = colorScale.getHexColor(value, invert);
         else
             color = '#000000';
         return color;
@@ -317,7 +360,7 @@ bus.Map = function(){
         var text = ("<b>Segment "+segmentId+"<br>Mean:</b> <div style=\"color:"+getColor(value)+"\">"+value+" mph</div>");
         for(var l in json) {
             var value = Math.round(json[l].mean * 100) / 100;
-            var color = getColor(value);
+            var color = getColor(value / 26.0, false);
             
             text += ("<b>"+l+":</b> <div style=\"color:"+color+"\">"+value+" mph</div>"); 
         }
@@ -359,9 +402,9 @@ bus.Map = function(){
             if(json[count]["all"] != undefined) {
                 console.log(json[count]["all"].mean);
                 layer.setStyle(styleSpeed);
-                layer.setStyle({color: getColor(json[count]["all"].mean)});
+                layer.setStyle({color: getColor(json[count]["all"].mean / 26.0, false)});
                 layer.feature.properties.speeds = json;
-                layer.feature.style = {color: getColor(json[count]["all"].mean)};
+                layer.feature.style = {color: getColor(json[count]["all"].mean / 26.0, false)};
 
                 var customOptions = {
                     'maxHeight': 500,
@@ -376,7 +419,27 @@ bus.Map = function(){
             count++;
             
         });
-    }
+    };
+
+    exports.showDwellTime = function(json) {
+        console.log(json);
+
+        var count = 0;
+        bus.map.paths['filter'].eachLayer(function(layer) {
+            if(json[count] != undefined) {
+                layer.setStyle(styleSpeed);
+                layer.setStyle({color: getColor(json[count] / 300.0, true)});
+                layer.feature.properties.speeds = json;
+                layer.feature.style = {color: getColor(json[count] / 300.0, true)};
+            }
+            else {
+                layer.setStyle(styleSpeed);
+                layer.setStyle({color: "#FFFFFF"});
+            }
+            count++;
+            
+        });
+    };
 
     exports.showFilterBuffer = function(show) {
         if(bus.map.paths["filter"] == undefined)
@@ -420,6 +483,7 @@ bus.Map = function(){
     };
 
     exports.clearPaths = function(){
+        console.log("clearing...");
         for(var p in bus.map.paths)
             bus.map.paths[p].remove();
         for(var p in bus.map.highlightedPaths)

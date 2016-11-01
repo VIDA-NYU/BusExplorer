@@ -22,6 +22,7 @@ bus.ColorScale = function(){
     var width = 250;
     var height = 30;
     var margin = {top: 0, right: 10, bottom: 50, left: 10};
+    var invert = false;
 
     // linear interpolation
     function lerp(a, b, u){
@@ -29,7 +30,7 @@ bus.ColorScale = function(){
     }
 
     // protected color computation
-    function getColor(val, isDiv){
+    function getColor(val, isDiv, inv){
         // colormap definition
         var cmap = typeof isDiv === 'undefined'? seqMap:divMap;
 
@@ -38,7 +39,10 @@ bus.ColorScale = function(){
         val = val>1?1:val;
 
         // invert: red low, white high
-        val = 1-val;
+        if(invert || inv)
+            val = val;
+        else
+            val = 1-val;
 
         // scale conversion
         var bin = val*(cmap.length-2);
@@ -61,7 +65,7 @@ bus.ColorScale = function(){
         return hex.length == 1 ? "0" + hex : hex;
     }
 
-    exports.getHexColor = function(val, isDiv) {
+    exports.getHexColor = function(val, isDiv, inv) {
         var rgb = getColor(val, isDiv);
         return "#" + componentToHex(Math.floor(rgb[0])) + componentToHex(Math.floor(rgb[1])) + componentToHex(Math.floor(rgb[2]));
     };
@@ -78,14 +82,17 @@ bus.ColorScale = function(){
         return color;
     };
 
-    exports.drawColorScale = function(parentDiv){
+    exports.drawColorScale = function(parentDiv, legendText, range, inv){
+
+        if(inv == undefined) inv = false;
+        invert = inv;
 
         // dataset
         var numBins = 50;
         var data = d3.range(numBins);
 
         var x0 = d3.scale.linear()
-            .domain([0, 50])
+            .domain(range)
             .range([margin.left, width+margin.left]);
 
         // axis
@@ -120,7 +127,7 @@ bus.ColorScale = function(){
             .call(xAxis);
 
         svg.append("text")
-            .text("Speed (mph)")
+            .text(legendText)
             .attr("x", width/2)
             .attr("y", height + margin.top + margin.bottom/1.5)
             .attr("text-anchor", "middle")
