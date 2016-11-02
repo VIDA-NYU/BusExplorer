@@ -31,8 +31,12 @@ bus.Db = function (){
 			selectionMode:bus.map.selectionMode,
             aggregateByLine:bus.filterCard.getAggregateByLine(getAsString),
             date:bus.filterCard.getDate(getAsString),
-            quarter: bus.filterCard.getQuarter(getAsString)
+            // quarter: bus.filterCard.getQuarter(getAsString)
+            startMinute: bus.filterCard.getStartMinute(getAsString),
+            endMinute: bus.filterCard.getEndMinute(getAsString)
         };
+
+        console.log(data);
         return data;
     }
 

@@ -18,13 +18,13 @@ def readFile(fileName, numLines, dbName, collectionName, erase):
     db = client[dbName]
     collection = db[collectionName]
     collection.create_index([("VehicleLocation", pymongo.GEOSPHERE)])
+    collection.create_index([("minute", 1)])
     collection.create_index([("hour", 1)])
     collection.create_index([("month", 1)])
     collection.create_index([("dayOfWeek", 1)])
     collection.create_index([("year", 1)])
     collection.create_index([("PublishedLineName", 1)])
     collection.create_index([("DirectionRef", 1)])
-    collection.create_index([("quarter", 1)])
     collection.create_index([("RecordedAtTime", 1)])
     
 
@@ -39,7 +39,8 @@ def readFile(fileName, numLines, dbName, collectionName, erase):
         dayOfWeek = dateObj.weekday()
         year = dateObj.year
         month = dateObj.month
-        quarter = dateObj.minute / 15 + 1
+        # quarter = dateObj.minute / 15 + 1
+        minute = dateObj.minute
 
         lineRef = tokens[1]
         originRef = tokens[2]
@@ -68,7 +69,7 @@ def readFile(fileName, numLines, dbName, collectionName, erase):
               'dayOfWeek': dayOfWeek,
               'year': year,
               'month': month,
-              'quarter': quarter}
+              'minute': minute}
         collection.insert(post)
 
         if count % 1000 == 0:

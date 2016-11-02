@@ -37,9 +37,18 @@ class StackMirror():
         if(startHour != -1 and endHour != -1):
             filters.append({"hour": {"$gte":startHour,"$lte":endHour}})
         elif(startHour == -1 and endHour != -1):
-            filters.append({"hour": {"$lte":startHour}})
+            filters.append({"hour": {"$lte":endHour}})
         elif(startHour != -1 and endHour == -1):
             filters.append({"hour": {"$gte":startHour}})
+
+        startMinute = json['startMinute']
+        endMinute   = json['endMinute']
+        if(startMinute != -1 and endMinute != -1):
+            filters.append({"minute": {"$gte":startMinute,"$lte":endMinute}})
+        elif(startMinute == -1 and endMinute != -1):
+            filters.append({"minute": {"$lte":endMinute}})
+        elif(startMinute != -1 and endMinute == -1):
+            filters.append({"minute": {"$gte":startMinute}})
 
         dayOfWeek = json['dayOfWeek']
         if(dayOfWeek != -1):
@@ -69,9 +78,9 @@ class StackMirror():
             filters.append({"RecordedAtTime": {"$gte": startDate}})
             filters.append({"RecordedAtTime": {"$lte": endDate}})
 
-        quarter = json['quarter']
-        if(quarter != -1):
-            filters.append({"quarter": {'$in' : quarter}})
+        # quarter = json['quarter']
+        # if(quarter != -1):
+            # filters.append({"quarter": {'$in' : quarter}})
 
         print filters
 

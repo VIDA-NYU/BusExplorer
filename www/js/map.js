@@ -59,7 +59,7 @@ bus.Map = function(){
     exports.paths = {};
     exports.highlightedPaths = {};
     exports.highlightedLines = {};
-    exports.selectionMode = "segment";
+    exports.selectionMode = "node";
 
     // create a new bus layer
     function createNewBus(render){

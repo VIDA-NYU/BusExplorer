@@ -74,7 +74,7 @@ bus.PathCard = function(){
         // gets the list
         var ul = modeDrop.select("ul");
         // sets the button label
-        modeDrop.select("button").html("segment");
+        modeDrop.select("button").html("node");
 
         // binds json to items and appends
         ul.selectAll("li")

@@ -102,7 +102,7 @@ bus.Ui = function() {
             .enter()
             .append('li')
             .html(function(d) { return '<a href="#">' + d + '</a>'; })
-            .style("font-weight", "normal");
+            .style("color", "black");
 
         // updates the button when selecting an item
         ul.selectAll("li")
@@ -112,14 +112,14 @@ bus.Ui = function() {
                 // already loaded
                 var index = bus.loadedLions.indexOf(d);
                 if( index < 0 ) {
-                    d3.select(this).select("a").style("font-weight", "bold");
+                    d3.select(this).select("a").style("color", "red");
                     __sig__.emit(__sig__.loadDataSet);
                 }
                 // changes selected
                 else {
                     bus.map.removeGeoJSON(d);
                     bus.loadedLions.splice(index, 1);
-                    d3.select(this).select("a").style("font-weight", "normal");
+                    d3.select(this).select("a").style("color", "black");
                     return;
                 }
 
@@ -150,7 +150,7 @@ bus.Ui = function() {
             .enter()
             .append('li')
             .html(function(d) { return '<a href="#">' + d + '</a>'; })
-            .style("font-weight", "normal");
+            .style("color", "black");
 
         // updates the button when selecting an item
         ul.selectAll("li")
@@ -160,14 +160,14 @@ bus.Ui = function() {
                 // already loaded
                 var index = bus.loadedLines.indexOf(d);
                 if( index < 0 ) {
-                    d3.select(this).select("a").style("font-weight", "bold");
+                    d3.select(this).select("a").style("color", "red");
                     __sig__.emit(__sig__.loadDataSet);
                 }
                 // changes selected
                 else {
                     bus.map.removeLine(d);
                     bus.loadedLines.splice(index, 1);
-                    d3.select(this).select("a").style("font-weight", "normal");
+                    d3.select(this).select("a").style("color", "black");
                     return;
                 }
 
@@ -181,8 +181,8 @@ bus.Ui = function() {
     }
 
     exports.clearPaths = function() {
-        d3.select("#lineSelector").selectAll("li").select("a").style("font-weight", "normal");
-        d3.select("#pathSelector").selectAll("li").select("a").style("font-weight", "normal");
+        d3.select("#lineSelector").selectAll("li").select("a").style("color", "black");
+        d3.select("#pathSelector").selectAll("li").select("a").style("color", "black");
     }
 
     // creates the add cart button

@@ -35,11 +35,11 @@ bus.FilterCard = function(){
         var index = bus.selectedProperties[dropId].indexOf(d);
         if(index < 0) {
             bus.selectedProperties[dropId].push(d);
-            d3.select(obj).select("a").style("font-weight", "bold");
+            d3.select(obj).select("a").style("color", "red");
         }
         else {
             bus.selectedProperties[dropId].splice(index, 1);
-            d3.select(obj).select("a").style("font-weight", "normal");
+            d3.select(obj).select("a").style("color", "black");
         }
     }
 
@@ -154,6 +154,8 @@ bus.FilterCard = function(){
             .on('click', function(d){
                 handleClick(this, dropId, d);
             });
+
+        cardDiv.append("hr");
     }
 
     function quarterSelector(propId){
@@ -180,7 +182,7 @@ bus.FilterCard = function(){
                 handleClick(this, dropId, d);
             });
 
-        cardDiv.append("hr");
+        
     }
 
     function hourSelector(propId){
@@ -189,7 +191,16 @@ bus.FilterCard = function(){
         // adds the drop down
         var dropClass = propId==0?"":"leftSpace";
         var start = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Hours: ");
-        var startPicker = bus.UiParts.Slider(cardDiv,"picker", [0,23], [0,23]);
+        var startPicker = bus.UiParts.Slider(cardDiv,"pickerHour", [0,23], [0,23]);
+    }
+
+    function minuteSelector(propId){
+        var dropId = "minuteSelector";
+
+        // adds the drop down
+        var dropClass = propId==0?"":"leftSpace";
+        var start = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Minutes: ");
+        var startPicker = bus.UiParts.Slider(cardDiv,"pickerMinute", [0,59], [0,59]);
         cardDiv.append("hr");
     }
 
@@ -269,7 +280,7 @@ bus.FilterCard = function(){
                     $("#filterCheckbox").find("input").attr("disabled",false);
                     $("#filterCheckbox").find("input").prop("checked",false);
                     $("#showSpeedSelector").attr("disabled", false);
-                    d3.select(".filter").transition().style("height", "800px");
+                    d3.select(".filter").transition().style("height", "850px");
                 }
                 else if(type === "Point"){
                     bus.map.clearPaths();
@@ -280,7 +291,7 @@ bus.FilterCard = function(){
                     $("#filterCheckbox").find("input").prop("checked",true);
                     $("#filterCheckbox").find("input").attr("disabled",true);
                     $("#showSpeedSelector").attr("disabled", true);
-                    d3.select(".filter").transition().style("height", "820px");
+                    d3.select(".filter").transition().style("height", "890px");
 
                 }
             }
@@ -291,11 +302,11 @@ bus.FilterCard = function(){
         $("#filterCheckbox").change(function () {
             if ($("#filterCheckbox").find("input").is(":checked")) {
                 $("#filterBufferSizeSelector").collapse("show");
-                d3.select(".filter").transition().style("height", "820px");
+                d3.select(".filter").transition().style("height", "890px");
                 bus.map.showFilterBuffer(true);
             } else {
                 $("#filterBufferSizeSelector").collapse("hide");
-                d3.select(".filter").transition().style("height", "800px");
+                d3.select(".filter").transition().style("height", "850px");
                 bus.map.showFilterBuffer(false);
             }
         });
@@ -458,11 +469,12 @@ bus.FilterCard = function(){
         monthSelector(1);
         yearSelector(1);
         directionSelector(1);
-        quarterSelector(1);
+        // quarterSelector(1);
         dateSelector(0);
         idSelector(0);
         lineSelector(0);
         hourSelector(0);
+        minuteSelector(0);
         pathSelector(0);
         filterBufferSizeSelector(0);
         exportPingCSVSelector(0);
@@ -584,11 +596,31 @@ bus.FilterCard = function(){
     };
 
     exports.getStartHour = function(){
-        return parseInt($("#picker").attr("value").split(",")[0]);
+        var value = parseInt($("#pickerHour").attr("value").split(",")[0]);
+        if(value == 0)
+            return -1;
+        return value;
     };
 
     exports.getEndHour = function(){
-        return parseInt($("#picker").attr("value").split(",")[1]);
+        var value = parseInt($("#pickerHour").attr("value").split(",")[1]);
+        if(value == 23)
+            return -1;
+        return value;
+    };
+
+    exports.getStartMinute = function(){
+        var value = parseInt($("#pickerMinute").attr("value").split(",")[0]);
+        if(value == 0)
+            return -1;
+        return value;
+    };
+
+    exports.getEndMinute = function(){
+        var value = parseInt($("#pickerMinute").attr("value").split(",")[1]);
+        if(value == 59)
+            return -1;
+        return value;
     };
 
     exports.getIds = function(){
