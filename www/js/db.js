@@ -30,7 +30,8 @@ bus.Db = function (){
 			path:bus.filterCard.getPath(getAsString),
 			selectionMode:bus.map.selectionMode,
             aggregateByLine:bus.filterCard.getAggregateByLine(getAsString),
-            date:bus.filterCard.getDate(getAsString)
+            date:bus.filterCard.getDate(getAsString),
+            quarter: bus.filterCard.getQuarter(getAsString)
         };
         return data;
     }

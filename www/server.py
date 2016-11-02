@@ -69,6 +69,10 @@ class StackMirror():
             filters.append({"RecordedAtTime": {"$gte": startDate}})
             filters.append({"RecordedAtTime": {"$lte": endDate}})
 
+        quarter = json['quarter']
+        if(quarter != -1):
+            filters.append({"quarter": {'$in' : quarter}})
+
         print filters
 
         return filters

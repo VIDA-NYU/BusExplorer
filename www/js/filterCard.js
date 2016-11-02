@@ -154,6 +154,31 @@ bus.FilterCard = function(){
             .on('click', function(d){
                 handleClick(this, dropId, d);
             });
+    }
+
+    function quarterSelector(propId){
+        var dropId = "quarterSelector";
+
+        // adds the drop down
+        var dropClass = propId==0?"":"leftSpace topSpace";
+        var directionDrop = bus.UiParts.DropDown(cardDiv,dropId,dropClass);
+
+        // gets the list
+        var ul = directionDrop.select("ul");
+        // sets the button label
+        directionDrop.select("button").html("Hour quarter");
+
+        // binds json to items and appends
+        ul.selectAll("li")
+            .data([].concat([1,2,3,4]))
+            .enter()
+            .append('li')
+            .html(function(d) { return '<a href="#">' + d + '</a>'; });
+
+        ul.selectAll("li")
+            .on('click', function(d){
+                handleClick(this, dropId, d);
+            });
 
         cardDiv.append("hr");
     }
@@ -433,6 +458,7 @@ bus.FilterCard = function(){
         monthSelector(1);
         yearSelector(1);
         directionSelector(1);
+        quarterSelector(1);
         dateSelector(0);
         idSelector(0);
         lineSelector(0);
@@ -496,6 +522,22 @@ bus.FilterCard = function(){
     exports.getMonth = function(returnString){
 
         var vals = bus.selectedProperties["monthSelector"];
+        if(vals == undefined || vals.length == 0) {
+            if(returnString)
+                return "";
+            else
+                return -1;
+        }
+
+        if(returnString) {
+            return (""+vals).replace(/,/g,"+");
+        }
+        return vals;
+    };
+
+    exports.getQuarter = function(returnString){
+
+        var vals = bus.selectedProperties["quarterSelector"];
         if(vals == undefined || vals.length == 0) {
             if(returnString)
                 return "";

@@ -24,6 +24,8 @@ def readFile(fileName, numLines, dbName, collectionName, erase):
     collection.create_index([("year", 1)])
     collection.create_index([("PublishedLineName", 1)])
     collection.create_index([("DirectionRef", 1)])
+    collection.create_index([("quarter", 1)])
+    collection.create_index([("RecordedAtTime", 1)])
     
 
     f = open(fileName)
@@ -37,6 +39,7 @@ def readFile(fileName, numLines, dbName, collectionName, erase):
         dayOfWeek = dateObj.weekday()
         year = dateObj.year
         month = dateObj.month
+        quarter = dateObj.minute / 15 + 1
 
         lineRef = tokens[1]
         originRef = tokens[2]
@@ -64,7 +67,8 @@ def readFile(fileName, numLines, dbName, collectionName, erase):
               'hour': hour,\
               'dayOfWeek': dayOfWeek,
               'year': year,
-              'month': month}
+              'month': month,
+              'quarter': quarter}
         collection.insert(post)
 
         if count % 1000 == 0:
