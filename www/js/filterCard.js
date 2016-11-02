@@ -28,6 +28,21 @@ bus.FilterCard = function(){
         }
     }
 
+    function handleClick(obj, dropId, d) {
+        if(bus.selectedProperties[dropId] == undefined)
+            bus.selectedProperties[dropId] = [];
+
+        var index = bus.selectedProperties[dropId].indexOf(d);
+        if(index < 0) {
+            bus.selectedProperties[dropId].push(d);
+            d3.select(obj).select("a").style("font-weight", "bold");
+        }
+        else {
+            bus.selectedProperties[dropId].splice(index, 1);
+            d3.select(obj).select("a").style("font-weight", "normal");
+        }
+    }
+
     // create the div
     function createDiv(parentDiv){
         // creates the new card div
@@ -42,123 +57,105 @@ bus.FilterCard = function(){
         var dropId = "daySelector";
 
         // adds the drop down
-        var dropClass = propId==0?"":"leftSpace";
-        var day = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Day of week: ");
+        var dropClass = propId==0?"":"leftSpace topSpace";
         var dayDrop = bus.UiParts.DropDown(cardDiv,dropId,dropClass);
         // cardDiv.append("br");
 
         // gets the list
         var ul = dayDrop.select("ul");
         // sets the button label
-        dayDrop.select("button").html("All");
+        dayDrop.select("button").html("Day of week");
 
         // binds json to items and appends
         ul.selectAll("li")
-            .data(["All","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"])
+            .data(["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"])
             .enter()
             .append('li')
             .html(function(d) { return '<a href="#">' + d + '</a>'; });
 
         ul.selectAll("li")
             .on('click', function(d){
-                dayDrop.select('button').html(d);
-                // updates the selected function
-                bus.selectedProperties[dropId] = d;
+                handleClick(this, dropId, d);
             });
-
-        cardDiv.append("br");
     }
 
     function monthSelector(propId){
         var dropId = "monthSelector";
 
         // adds the drop down
-        var dropClass = propId==0?"":"leftSpace";
-        var month = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Month: ");
+        var dropClass = propId==0?"":"leftSpace topSpace";
         var monthDrop = bus.UiParts.DropDown(cardDiv,dropId,dropClass);
         // cardDiv.append("br");
 
         // gets the list
         var ul = monthDrop.select("ul");
         // sets the button label
-        monthDrop.select("button").html("All");
+        monthDrop.select("button").html("Month");
 
         // binds json to items and appends
         ul.selectAll("li")
-            .data(["All"].concat(d3.range(1,13,1)))
+            .data([].concat(d3.range(1,13,1)))
             .enter()
             .append('li')
             .html(function(d) { return '<a href="#">' + d + '</a>'; });
 
         ul.selectAll("li")
             .on('click', function(d){
-                monthDrop.select('button').html(d);
-                // updates the selected function
-                bus.selectedProperties[dropId] = d;
+                handleClick(this, dropId, d);
             });
-
-        cardDiv.append("br");
     }
 
     function yearSelector(propId){
         var dropId = "yearSelector";
 
         // adds the drop down
-        var dropClass = propId==0?"":"leftSpace";
-        var year = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Year: ");
+        var dropClass = propId==0?"":"leftSpace topSpace";
         var yearDrop = bus.UiParts.DropDown(cardDiv,dropId,dropClass);
         // cardDiv.append("br");
 
         // gets the list
         var ul = yearDrop.select("ul");
         // sets the button label
-        yearDrop.select("button").html("All");
+        yearDrop.select("button").html("Year");
 
         // binds json to items and appends
         ul.selectAll("li")
-            .data(["All"].concat(d3.range(2013,2016,1)))
+            .data([].concat(d3.range(2013,2016,1)))
             .enter()
             .append('li')
             .html(function(d) { return '<a href="#">' + d + '</a>'; });
 
         ul.selectAll("li")
             .on('click', function(d){
-                yearDrop.select('button').html(d);
-                // updates the selected function
-                bus.selectedProperties[dropId] = d;
+                handleClick(this, dropId, d);
             });
-
-        cardDiv.append("br");
     }
 
     function directionSelector(propId){
         var dropId = "directionSelector";
 
         // adds the drop down
-        var dropClass = propId==0?"":"leftSpace";
-        var direction = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Direction: ");
+        var dropClass = propId==0?"":"leftSpace topSpace";
         var directionDrop = bus.UiParts.DropDown(cardDiv,dropId,dropClass);
 
         // gets the list
         var ul = directionDrop.select("ul");
         // sets the button label
-        directionDrop.select("button").html("All");
+        directionDrop.select("button").html("Direction");
 
         // binds json to items and appends
         ul.selectAll("li")
-            .data(["All"].concat([0,1]))
+            .data([].concat([0,1]))
             .enter()
             .append('li')
             .html(function(d) { return '<a href="#">' + d + '</a>'; });
 
         ul.selectAll("li")
             .on('click', function(d){
-                directionDrop.select('button').html(d);
-                // updates the selected function
-                bus.selectedProperties[dropId] = d;
+                handleClick(this, dropId, d);
             });
 
-        cardDiv.append("br");
+        cardDiv.append("hr");
     }
 
     function hourSelector(propId){
@@ -168,6 +165,16 @@ bus.FilterCard = function(){
         var dropClass = propId==0?"":"leftSpace";
         var start = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Hours: ");
         var startPicker = bus.UiParts.Slider(cardDiv,"picker", [0,23], [0,23]);
+        cardDiv.append("hr");
+    }
+
+    function dateSelector(propId){
+        var dropId = "dateSelector";
+
+        // adds the drop down
+        var dropClass = propId==0?"":"leftSpace";
+        var start = bus.UiParts.SimpleText(cardDiv,dropId+"Label",dropClass,"Range: ");
+        var startPicker = bus.UiParts.Date(cardDiv,"dateStart");
         cardDiv.append("hr");
     }
 
@@ -422,13 +429,14 @@ bus.FilterCard = function(){
         closeCardSelector();
 
         // card menu
-        daySelector(0);
-        monthSelector(0);
-        yearSelector(0);
-        directionSelector(0);
-        hourSelector(0);
+        daySelector(1);
+        monthSelector(1);
+        yearSelector(1);
+        directionSelector(1);
+        dateSelector(0);
         idSelector(0);
         lineSelector(0);
+        hourSelector(0);
         pathSelector(0);
         filterBufferSizeSelector(0);
         exportPingCSVSelector(0);
@@ -444,71 +452,93 @@ bus.FilterCard = function(){
         if(returnString == undefined)
             returnString = false;
 
-        var val = $("#daySelector").children("button").text();
-        if(returnString)
-            return val;
-        
-        switch(val) {
-            case "All":
-                return -1;
-            case "Monday":
-                return 0;
-            case "Tuesday":
-                return 1;
-            case "Wednesday":
-                return 2;
-            case "Thursday":
-                return 3;
-            case "Friday":
-                return 4;
-            case "Saturday":
-                return 5;
-            case "Sunday":
-                return 6;
+        var vals = [];
+        for(var d in bus.selectedProperties["daySelector"]) {
+            var name = bus.selectedProperties["daySelector"][d];
+            switch(name) {
+                case "Monday":
+                    vals.push(0);
+                    break;
+                case "Tuesday":
+                    vals.push(1);
+                    break;
+                case "Wednesday":
+                    vals.push(2);
+                    break;
+                case "Thursday":
+                    vals.push(3);
+                    break;
+                case "Friday":
+                    vals.push(4);
+                    break;
+                case "Saturday":
+                    vals.push(5);
+                    break;
+                case "Sunday":
+                    vals.push(6);
+                    break;
+            }
         }
-        return -1;
+
+        if(vals == undefined || vals.length == 0) {
+            if(returnString)
+                return "";
+            else
+                return -1;
+        }
+
+        if(returnString) {
+            return (""+vals).replace(/,/g,"+");
+        }
+        return vals;
     };
 
     exports.getMonth = function(returnString){
 
-        if(returnString == undefined)
-            returnString = false;
+        var vals = bus.selectedProperties["monthSelector"];
+        if(vals == undefined || vals.length == 0) {
+            if(returnString)
+                return "";
+            else
+                return -1;
+        }
 
-        var month = $("#monthSelector").children("button").text();
-        if(returnString)
-            return month;
-
-        if(month === "All")
-            return -1;
-        return parseInt(month);
+        if(returnString) {
+            return (""+vals).replace(/,/g,"+");
+        }
+        return vals;
     };
 
     exports.getYear = function(returnString){
 
-        if(returnString == undefined)
-            returnString = false;
+        var vals = bus.selectedProperties["yearSelector"];
+        if(vals == undefined || vals.length == 0) {
+            if(returnString)
+                return "";
+            else
+                return -1;
+        }
 
-        var year = $("#yearSelector").children("button").text();
-        if(returnString)
-            return year;
-
-        if(year === "All")
-            return -1;
-        return parseInt(year);
+        if(returnString) {
+            return (""+vals).replace(/,/g,"+");
+        }
+        return vals;
     };
 
     exports.getDirection = function(returnString){
 
-        if(returnString == undefined)
-            returnString = false
+        var vals = bus.selectedProperties["directionSelector"];
+        if(vals == undefined || vals.length == 0) {
+            if(returnString)
+                return "";
+            else
+                return -1;
+        }
 
-        var dir = $("#directionSelector").children("button").text();
-        if(returnString)
-            return dir;
-
-        if(dir === "All")
-            return -1;
-        return parseInt(dir);
+        if(returnString) {
+            return (""+vals).replace(/,/g,"+");
+        }
+        return vals;
     };
 
     exports.getStartHour = function(){
@@ -533,6 +563,12 @@ bus.FilterCard = function(){
         }
         return path;
     };
+
+    exports.getDate = function(){
+        if($("#dateStart").val() == "")
+            return -1;
+        return [$("#dateStart").data('daterangepicker').startDate.format("MM/DD/YY HH:mm"), $("#dateStart").data('daterangepicker').endDate.format("MM/DD/YY HH:mm")];
+    }
 
     exports.getAggregateByLine = function(){
         return $("#aggregationCheckbox").find("input").is(":checked");

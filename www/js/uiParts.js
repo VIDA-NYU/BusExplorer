@@ -90,6 +90,34 @@ bus.UiParts.SimpleText = function(parentDiv, textId, textClass, text){
     return textDiv;
 };
 
+bus.UiParts.Date = function(parentDiv, pickerId, textClass, text){
+    
+    var div = parentDiv.append("input")
+        .attr("id",pickerId)
+        .attr("type", "text")
+        .style("width", "100%");
+
+    $("#"+pickerId).daterangepicker({
+        timePicker: true,
+        timePicker24Hour: true,
+        autoUpdateInput: false,
+          locale: {
+              cancelLabel: 'Clear'
+          }
+    });
+
+    $("#"+pickerId).on('apply.daterangepicker', function(ev, picker) {
+        $(this).val(picker.startDate.format('MM/DD/YY HH:mm') + ' to ' + picker.endDate.format('MM/DD/YY HH:mm'));
+    });
+
+    $("#"+pickerId).on('cancel.daterangepicker', function(ev, picker) {
+        $(this).val('');
+    });
+
+    return div;
+
+};
+
 bus.UiParts.Slider = function(parentDiv, pickerId, range, initialValue){
 
     var div = parentDiv.append("input")

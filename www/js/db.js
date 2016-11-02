@@ -29,7 +29,8 @@ bus.Db = function (){
             direction:bus.filterCard.getDirection(getAsString),
 			path:bus.filterCard.getPath(getAsString),
 			selectionMode:bus.map.selectionMode,
-            aggregateByLine:bus.filterCard.getAggregateByLine(getAsString)
+            aggregateByLine:bus.filterCard.getAggregateByLine(getAsString),
+            date:bus.filterCard.getDate(getAsString)
         };
         return data;
     }
@@ -52,6 +53,9 @@ bus.Db = function (){
 
         var data = getFilters();
         var name = "speed,"+getName();
+
+        console.log(data);
+        console.log(name);
         
         $.ajax({
             type: "POST",

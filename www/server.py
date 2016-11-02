@@ -13,6 +13,7 @@ import random
 import json
 import argparse
 import numpy
+import datetime
 
 class StackMirror():
 
@@ -42,23 +43,33 @@ class StackMirror():
 
         dayOfWeek = json['dayOfWeek']
         if(dayOfWeek != -1):
-            filters.append({"dayOfWeek": dayOfWeek})
+            filters.append({"dayOfWeek": {'$in' : dayOfWeek}})
 
         month = json['month']
         if(month != -1):
-            filters.append({"month": month})
+            filters.append({"month": {'$in' : month}})
 
         year = json['year']
         if(year != -1):
-            filters.append({"year": year})
+            filters.append({"year": {'$in' : year}})
 
         direction = json['direction']
         if(direction != -1):
-            filters.append({"DirectionRef": direction})
+            filters.append({"DirectionRef": {'$in' : direction}})
 
         lines = json['lines'].split(',')
         if(len(lines) > 0 and lines[0] != ''):
             filters.append({"PublishedLineName" : {'$in' : lines }})
+
+        date = json['date']
+        if(date != -1):
+            print date
+            startDate = datetime.datetime.strptime(date[0][0:-1], "%m/%d/%y %H:%M")
+            endDate = datetime.datetime.strptime(date[1][0:-1], "%m/%d/%y %H:%M")
+            filters.append({"RecordedAtTime": {"$gte": startDate}})
+            filters.append({"RecordedAtTime": {"$lte": endDate}})
+
+        print filters
 
         return filters
 
