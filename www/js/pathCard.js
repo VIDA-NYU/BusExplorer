@@ -78,7 +78,7 @@ bus.PathCard = function(){
 
         // binds json to items and appends
         ul.selectAll("li")
-            .data(["segment", "node"])
+            .data(["node", "segment"])
             .enter()
             .append('li')
             .html(function(d) { return '<a href="#">' + d + '</a>'; });

@@ -30,7 +30,7 @@ bus.Map = function(){
     };
     var styleHighlighted = {
         "color": "#ff0000",
-        "weight": 6
+        "weight": 9
     };
     var styleHide = {
         "fillOpacity": 0,
@@ -52,6 +52,7 @@ bus.Map = function(){
     var thr = undefined;
     var mouseOver = undefined;
     var lastClick = undefined;
+    var removingFeature = false;
     var colorScale = new bus.ColorScale();
 
     // exported api
@@ -196,19 +197,43 @@ bus.Map = function(){
         }                
         
         // add new feature to highlighted selection
+        var key = ""+newFeature.geometry.coordinates;
+        if(bus.map.highlightedPaths[key] != undefined)
+            return;
+
+
         var aux = L.geoJSON(newFeature, {
-            style: styleHighlighted
+            style: styleHighlighted,
+            onEachFeature: function(feature, layer) {
+                layer.on({
+                    click: function(e) {
+                        console.log("removing...");
+                        bus.map.highlightedPaths[key].remove();
+                        delete bus.map.highlightedPaths[key];
+                    }
+                });
+                layer.on({
+                    mouseout: function(e) {
+                        if(mouseOver != undefined) 
+                            mouseOver.setStyle(styleDefault);
+                    }
+                })
+            }
         }).addTo(map);
         aux.bringToFront();
-        var key = Object.keys(bus.map.highlightedPaths).length;
         bus.map.highlightedPaths[key] = aux;
     };
 
     exports.addNode = function(e, feature, layer) {
 
+        var key = ""+e.latlng;
         var aux = L.circle(e.latlng, bus.filterSize, styleHighlighted).addTo(map);
+        aux.on('click', function(e) {
+            console.log("removing...");
+            bus.map.highlightedPaths[key].remove();
+            delete bus.map.highlightedPaths[key];
+        });
         aux.bringToFront();
-        var key = Object.keys(bus.map.highlightedPaths).length;
         bus.map.highlightedPaths[key] = aux;
     };
 
@@ -226,7 +251,7 @@ bus.Map = function(){
         // var that = this;
         layer.on({
             mouseover: function(e) {
-                if(mouseOver != undefined)
+                if(mouseOver != undefined) 
                     mouseOver.setStyle(styleDefault);
                 layer.setStyle(styleOnMouseOver);
                 mouseOver = layer;
@@ -251,9 +276,7 @@ bus.Map = function(){
                         bus.map.addNode(e,feature,layer);
                     }
                     lastClick = e.layerPoint;
-                }
-
-                
+                }                
             }
         });
     };
@@ -278,6 +301,18 @@ bus.Map = function(){
                 
             }
         });
+
+        layer.bindPopup(feature.properties.bus_lines);
+        layer.on({
+            mouseover: function(e) {
+                this.openPopup();
+            }
+        });
+        layer.on({
+            mouseout: function(e) {
+                this.closePopup();
+            }
+        })
     };
 
     exports.addGeoJson = function(geojson, name, enableEachFeature, hidden){
@@ -348,6 +383,9 @@ bus.Map = function(){
     };
 
     function getColor(value, invert) {
+        if(invert == undefined)
+            invert = false;
+
         if(value > 0)
             color = colorScale.getHexColor(value, invert);
         else
@@ -355,12 +393,12 @@ bus.Map = function(){
         return color;
     }
 
-    function popupContent(segmentId, json) {
+    function popupSpeed(segmentId, json) {
         var value = Math.round(json["all"].mean * 100) / 100;
-        var text = ("<b>Segment "+segmentId+"<br>Mean:</b> <div style=\"color:"+getColor(value)+"\">"+value+" mph</div>");
+        var text = ("<b>Segment "+segmentId+"<br>Mean:</b> <div style=\"color:"+getColor(value / 26.0, true)+"\">"+value+" mph</div>");
         for(var l in json) {
             var value = Math.round(json[l].mean * 100) / 100;
-            var color = getColor(value / 26.0, false);
+            var color = getColor(value / 26.0, true);
             
             text += ("<b>"+l+":</b> <div style=\"color:"+color+"\">"+value+" mph</div>"); 
         }
@@ -402,15 +440,15 @@ bus.Map = function(){
             if(json[count]["all"] != undefined) {
                 console.log(json[count]["all"].mean);
                 layer.setStyle(styleSpeed);
-                layer.setStyle({color: getColor(json[count]["all"].mean / 26.0, false)});
+                layer.setStyle({color: getColor(json[count]["all"].mean / 26.0, true)});
                 layer.feature.properties.speeds = json;
-                layer.feature.style = {color: getColor(json[count]["all"].mean / 26.0, false)};
+                layer.feature.style = {color: getColor(json[count]["all"].mean / 26.0, true)};
 
                 var customOptions = {
                     'maxHeight': 500,
                     'closeOnClick': true
                 }
-                layer.bindPopup(popupContent(count, json[count]),customOptions);
+                layer.bindPopup(popupSpeed(count, json[count]),customOptions);
             }
             else {
                 layer.setStyle(styleSpeed);
@@ -428,9 +466,18 @@ bus.Map = function(){
         bus.map.paths['filter'].eachLayer(function(layer) {
             if(json[count] != undefined) {
                 layer.setStyle(styleSpeed);
-                layer.setStyle({color: getColor(json[count] / 300.0, true)});
+                layer.setStyle({color: getColor(json[count] / 300.0)});
                 layer.feature.properties.speeds = json;
-                layer.feature.style = {color: getColor(json[count] / 300.0, true)};
+                layer.feature.style = {color: getColor(json[count] / 300.0)};
+
+                var customOptions = {
+                    'maxHeight': 500,
+                    'closeOnClick': true
+                }
+
+                var value = Math.round(json[count] * 100) / 100;;
+                var text = "Dwell time: "+value+" seconds";
+                layer.bindPopup(text,customOptions);
             }
             else {
                 layer.setStyle(styleSpeed);
