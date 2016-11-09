@@ -578,10 +578,16 @@ bus.Map = function(){
         
         var doImage = function(err, canvas) {
 
-            var svg = d3.select("#cscale");
-            svg.append("defs").append("style").attr("type", "text/css").text("path {fill: none; stroke: #000000} text {font: 12px sans-serif}");
-            var svgHtml = document.getElementById("cscale").outerHTML;
-            canvg(canvas, svgHtml, {ignoreClear: true, ignoreDimensions: true});
+            var svgDwell = d3.select("#dwellTimeColorscale");
+            svgDwell.append("defs").append("style").attr("type", "text/css").text("path {fill: none; stroke: #000000} text {font: 12px sans-serif}");
+
+            var svgSpeed = d3.select("#speedColorscale");
+            svgSpeed.append("defs").append("style").attr("type", "text/css").text("path {fill: none; stroke: #000000} text {font: 12px sans-serif}");
+
+            var svgHtmlDwell = document.getElementById("dwellTimeColorscale").outerHTML;
+            var svgHtmlSpeed = document.getElementById("speedColorscale").outerHTML;
+            canvg(canvas, svgHtmlDwell, {ignoreClear: true, ignoreDimensions: true});
+            canvg(canvas, svgHtmlSpeed, {ignoreClear: true, ignoreDimensions: true, offsetX: 300});
             downloadImage(canvas, "image.png"); 
         }
         leafletImage(map, doImage);

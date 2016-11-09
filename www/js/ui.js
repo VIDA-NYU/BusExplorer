@@ -229,12 +229,12 @@ bus.Ui = function() {
     // color pallet
     function addSpeedColorPallet(parentDiv){
         var cScale = new bus.ColorScale();
-        cScale.drawColorScale(parentDiv, "Speed (mph)", [0,26], true);
+        cScale.drawColorScale(parentDiv, "speedColorscale", "Speed (mph)", [0,26], true);
     }
 
     function addDwellTimeColorPallet(parentDiv){
         var cScale = new bus.ColorScale();
-        cScale.drawColorScale(parentDiv, "Dwell time (s)", [0,300], false);
+        cScale.drawColorScale(parentDiv, "dwellTimeColorscale", "Dwell time (s)", [0,300], false);
     }
 
     // creates the main menu

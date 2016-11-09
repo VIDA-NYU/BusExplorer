@@ -595,31 +595,47 @@ bus.FilterCard = function(){
         return vals;
     };
 
-    exports.getStartHour = function(){
+    exports.getStartHour = function(returnString){
         var value = parseInt($("#pickerHour").attr("value").split(",")[0]);
-        if(value == 0)
-            return -1;
+        if(value == 0) {
+            if(returnString)
+                return "0";
+            else
+                return -1;
+        }
         return value;
     };
 
-    exports.getEndHour = function(){
+    exports.getEndHour = function(returnString){
         var value = parseInt($("#pickerHour").attr("value").split(",")[1]);
-        if(value == 23)
-            return -1;
+        if(value == 23) {
+            if(returnString)
+                return "23";
+            else
+                return -1;
+        }
         return value;
     };
 
-    exports.getStartMinute = function(){
+    exports.getStartMinute = function(returnString){
         var value = parseInt($("#pickerMinute").attr("value").split(",")[0]);
-        if(value == 0)
-            return -1;
+        if(value == 0) {
+            if(returnString)
+                return "0";
+            else
+                return -1;
+        }
         return value;
     };
 
-    exports.getEndMinute = function(){
+    exports.getEndMinute = function(returnString){
         var value = parseInt($("#pickerMinute").attr("value").split(",")[1]);
-        if(value == 59)
-            return -1;
+        if(value == 59) {
+            if(returnString)
+                return "59";
+            else
+                return -1;
+        }
         return value;
     };
 

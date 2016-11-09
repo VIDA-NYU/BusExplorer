@@ -47,6 +47,8 @@ bus.Db = function (){
                   +",Year."+data.year
                   +",StartHour."+data.startHour
                   +",EndHour."+data.endHour
+                  +",StartMinute."+data.startMinute
+                  +",EndMinute."+data.endMinute
                   +",Ids."+data.ids
                   +",Lines."+data.lines
                   +",Dir."+data.direction

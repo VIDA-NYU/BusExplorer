@@ -268,9 +268,9 @@ class StackMirror():
                 byLine = self.aggregateByLine({"times": tripTimes, "lines": lines}, "times")
                 formatted = 'segment,line,count,mean,median,min,max,percentile25th,percentile75th\n'
                 for l in byLine:
-                        formatted += "%d,%s,%d,%d,%d,%d,%d,%d,%d\n"%(0,l,len(byLine[l]),numpy.mean(byLine[l]).item().total_seconds(),numpy.median(byLine[l]).item().total_seconds(),\
-                            min(byLine[l]).item().total_seconds(),max(byLine[l]).item().total_seconds(),\
-                            numpy.percentile(byLine[l],25).item().total_seconds(),numpy.percentile(byLine[l],75).item().total_seconds())
+                    formatted += "%d,%s,%d,%d,%d,%d,%d,%d,%d\n"%(0,l,len(byLine[l]),abs(numpy.mean(byLine[l])),abs(numpy.median(byLine[l])),\
+                        abs(min(byLine[l])),abs(max(byLine[l])),\
+                        abs(numpy.percentile(byLine[l],25)),abs(numpy.percentile(byLine[l],75)))
 
 
             else:

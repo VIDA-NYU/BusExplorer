@@ -74,7 +74,7 @@ bus.ColorScale = function(){
         return color;
     };
 
-    exports.drawColorScale = function(parentDiv, legendText, range, inv){
+    exports.drawColorScale = function(parentDiv, name, legendText, range, inv){
 
         if(inv == undefined) inv = false;
         invert = inv;
@@ -97,7 +97,7 @@ bus.ColorScale = function(){
 
         svg.attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
-            .attr("id", "cscale")
+            .attr("id", name)
           .selectAll("rect")
             .data(data)
             .enter()
