@@ -535,7 +535,9 @@ class StackMirror():
                     sumDwellTime += dwellTime
                     countValid += 1
 
-            outputJson[count] = ((sumDwellTime / countValid))
+            if(countValid > 0):
+                outputJson[count] = ((sumDwellTime / countValid))
+
             count+=1
 
         return outputJson
