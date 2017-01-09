@@ -548,11 +548,11 @@ class StackMirror():
 
         return outputJson
 
-def startServer(hostName, user, password, dbName, collectionName):
+def startServer(hostName, mongoHostName, user, password, dbName, collectionName):
     # Uncomment below for server functionality
     PATH = os.path.abspath(os.path.dirname(__file__))
     class Root(object): pass
-    cherrypy.tree.mount(StackMirror(hostName, user, password, dbName, collectionName), '/', config={
+    cherrypy.tree.mount(StackMirror(mongoHostName, user, password, dbName, collectionName), '/', config={
             '/': {
                     'tools.staticdir.on': True,
                     'tools.staticdir.dir': PATH,
@@ -560,8 +560,10 @@ def startServer(hostName, user, password, dbName, collectionName):
                 },
         })
 
+    hostName = hostName.split(":")
     # sudo iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
-    cherrypy.config.update({'server.socket_host': '0.0.0.0',
+    cherrypy.config.update({'server.socket_host': hostName[0],
+                            'server.socket_port': hostName[1],
                             'engine.autoreload.on': True
                             })
     cherrypy.engine.start()
@@ -569,11 +571,12 @@ def startServer(hostName, user, password, dbName, collectionName):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='CherryPy server.')
-    parser.add_argument(action="store", dest="hostName", help='MongoDB hostname')
+    parser.add_argument(action="store", dest="mongoHostName", help='MongoDB hostname')
+    parser.add_argument(action="store", dest="hostName", help='Server hostname')
     parser.add_argument('-u', action="store", dest="user", help='MongoDB username', default=None)
     parser.add_argument('-p', action="store", dest="password", help='MongoDB password', default=None)
     parser.add_argument('-d', action="store", dest="dbName", help='Database name', default='dot')
     parser.add_argument('-c', action="store", dest="collectionName", help='Collection name', default='bus')
 
     args = parser.parse_args()
-    startServer(args.hostName, args.user, args.password, args.dbName, args.collectionName)
+    startServer(args.hostName, args.mongoHostName, args.user, args.password, args.dbName, args.collectionName)
