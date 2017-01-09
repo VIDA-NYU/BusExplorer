@@ -18,10 +18,11 @@ import datetime
 class StackMirror():
 
     def __init__(self, hostName, user, password, dbName, collectionName):
-        self.db = MongoClient(host=[hostName])[dbName]
+        self.db = MongoClient(host=[hostName])
         if user != None and password != None:
             self.db.the_database.authenticate(user, password, source=dbName)
 
+        self.db = self.db[dbName]
         self.collection = self.db[collectionName]
 
     @cherrypy.expose
