@@ -15,7 +15,7 @@ def readFile(hostName, user, password, fileName, numLines, dbName, collectionNam
 
     client = pymongo.MongoClient(host=[hostName])
     if user != None and password != None:
-      client.the_database.authenticate(user, password)
+      client.the_database.authenticate(user, password, source=dbName)
     if erase:
         client.drop_database(dbName)
 
