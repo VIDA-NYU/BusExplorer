@@ -7,11 +7,13 @@ import datetime
 import pymongo
 from datetime import datetime
 
+# default format
 # 2014-12-31T23:59:32.000-05:00,MTABC_Q23,MTA_502547,1,MTABC_4489,FOREST HILLS UNION TPK via 108 ST,17.694641,40.70659,-73.855297,Q23,MTA_Q230052,MTABC_7081977-LGDD4-LG_D4-Weekday-10
-def readFile(fileName, numLines, dbName, collectionName, erase):
+
+def readFile(hostName, fileName, numLines, dbName, collectionName, erase, skipHeader, useDefaultFormat):
     print ("Reading from file %s into %s.%s. Erasing? %s")%(fileName, dbName, collectionName, erase)
 
-    client = pymongo.MongoClient()
+    client = pymongo.MongoClient(host=[hostName])
     if erase:
         client.drop_database(dbName)
 
@@ -29,6 +31,8 @@ def readFile(fileName, numLines, dbName, collectionName, erase):
     
 
     f = open(fileName)
+    if skipHeader:
+      f.readline()
     count = 0
     for line in f:
         tokens = line.rstrip().split(',')
@@ -85,11 +89,13 @@ def readFile(fileName, numLines, dbName, collectionName, erase):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Import data from a csv file into mongodb.')
+    parser.add_argument(action="store", dest="hostName", help='MongoDB hostname')
     parser.add_argument(action="store", dest="fileName", help='File name')
     parser.add_argument('-n', action="store", dest="numLines", help='Number of lines to read from input', type=int, default=-1)
     parser.add_argument('-d', action="store", dest="dbName", help='Database name', default='dot')
     parser.add_argument('-c', action="store", dest="collectionName", help='Collection name', default='bus')
     parser.add_argument('-e', action="store_true", dest="erase", help='If db already exists, erase it', default=False)
+    parser.add_argument('-s', action="store_true", dest="skipHeader", help='Skip header', default=True)
 
     args = parser.parse_args()
-    readFile(args.fileName, args.numLines, args.dbName, args.collectionName, args.erase)
+    readFile(args.hostName, args.fileName, args.numLines, args.dbName, args.collectionName, args.erase, args.skipHeader)

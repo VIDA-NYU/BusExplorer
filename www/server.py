@@ -172,8 +172,11 @@ class StackMirror():
 
             query = {"VehicleLocation" : {"$geoWithin": geoJson}}
             filters.insert(0,query)
+
+            print {'$and': filters}
             
             cursor = self.collection.find({'$and': filters})
+
             return cursor
 
         elif selectionMode == "node":
@@ -183,10 +186,10 @@ class StackMirror():
 
             query = {"VehicleLocation" : {"$geoWithin": geoJson}}
             filters.insert(0,query)
+
+            print {'$and': filters}
             
             cursor = self.collection.find({'$and': filters})
-
-            print query
 
             return cursor
 
