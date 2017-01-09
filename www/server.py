@@ -18,9 +18,9 @@ import datetime
 class StackMirror():
 
     def __init__(self, hostName, user, password, dbName, collectionName):
-        self.db = pymongo.MongoClient(host=[hostName])[dbName]
+        self.db = MongoClient(host=[hostName])[dbName]
         if user != None and password != None:
-            client.the_database.authenticate(user, password, source=dbName)
+            self.db.the_database.authenticate(user, password, source=dbName)
 
         self.collection = self.db[collectionName]
 
