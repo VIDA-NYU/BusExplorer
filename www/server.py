@@ -17,8 +17,11 @@ import datetime
 
 class StackMirror():
 
-    def __init__(self, dbName, collectionName):
-        self.db = MongoClient()[dbName]
+    def __init__(self, hostName, user, password, dbName, collectionName):
+        self.db = pymongo.MongoClient(host=[hostName])[dbName]
+        if user != None and password != None:
+            client.the_database.authenticate(user, password, source=dbName)
+
         self.collection = self.db[collectionName]
 
     @cherrypy.expose
@@ -545,11 +548,11 @@ class StackMirror():
 
         return outputJson
 
-def startServer(dbName, collectionName):
+def startServer(hostName, user, password, dbName, collectionName):
     # Uncomment below for server functionality
     PATH = os.path.abspath(os.path.dirname(__file__))
     class Root(object): pass
-    cherrypy.tree.mount(StackMirror(dbName, collectionName), '/', config={
+    cherrypy.tree.mount(StackMirror(hostName, user, password, dbName, collectionName), '/', config={
             '/': {
                     'tools.staticdir.on': True,
                     'tools.staticdir.dir': PATH,
@@ -566,8 +569,11 @@ def startServer(dbName, collectionName):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='CherryPy server.')
+    parser.add_argument(action="store", dest="hostName", help='MongoDB hostname')
+    parser.add_argument('-u', action="store", dest="user", help='MongoDB username', default=None)
+    parser.add_argument('-p', action="store", dest="password", help='MongoDB password', default=None)
     parser.add_argument('-d', action="store", dest="dbName", help='Database name', default='dot')
     parser.add_argument('-c', action="store", dest="collectionName", help='Collection name', default='bus')
 
     args = parser.parse_args()
-    startServer(args.dbName, args.collectionName)
+    startServer(args.hostName, args.user, args.password, args.dbName, args.collectionName)
