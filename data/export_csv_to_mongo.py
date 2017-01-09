@@ -10,7 +10,7 @@ from datetime import datetime
 # default format
 # 2014-12-31T23:59:32.000-05:00,MTABC_Q23,MTA_502547,1,MTABC_4489,FOREST HILLS UNION TPK via 108 ST,17.694641,40.70659,-73.855297,Q23,MTA_Q230052,MTABC_7081977-LGDD4-LG_D4-Weekday-10
 
-def readFile(hostName, fileName, numLines, dbName, collectionName, erase, skipHeader, useDefaultFormat):
+def readFile(hostName, fileName, numLines, dbName, collectionName, erase, skipHeader):
     print ("Reading from file %s into %s.%s. Erasing? %s")%(fileName, dbName, collectionName, erase)
 
     client = pymongo.MongoClient(host=[hostName])
