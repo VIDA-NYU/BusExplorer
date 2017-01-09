@@ -564,7 +564,7 @@ def startServer(hostName, mongoHostName, user, password, dbName, collectionName)
     hostName = hostName.split(":")
     # sudo iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
     cherrypy.config.update({'server.socket_host': hostName[0],
-                            'server.socket_port': hostName[1],
+                            'server.socket_port': int(hostName[1]),
                             'engine.autoreload.on': True
                             })
     cherrypy.engine.start()
