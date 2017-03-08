@@ -1,0 +1,251 @@
+import json
+
+from geopy.distance import vincenty
+from pymongo import MongoClient
+import cherrypy
+import os
+import csv
+import math
+import copy
+import random
+from os import path, curdir
+
+class StackMirror():
+    db = MongoClient()["mta"]
+    collection = db.bus
+
+    @cherrypy.expose
+    def index(self):
+        return file("index.html")
+
+    def computeAvgSpeed(self, result):
+        # print 'computing speed...'
+
+        # Put everything into a dict, with originRef as key
+        pings = {}
+        for r in result:
+            key = r['DatedVehicleJourneyRef']
+            if (key in pings) == False:
+                pings[key] = []
+            pings[key].append(r)
+
+        # Sort pings by RecordedAtTime
+        for p in pings:
+            pings[p].sort(key = lambda r : r['RecordedAtTime'])
+            # if len(pings[p]) > 1:
+                # print len(pings[p])
+        # print len(pings)
+        # Compute speed between successive pings
+        speeds = []
+        for p in pings:
+            for i in range(1,len(pings[p])):
+                p0 = pings[p][i-1]['VehicleLocation']
+                p1 = pings[p][i]['VehicleLocation']
+                # AK Maybe instead of vincenty, we should hardcode our distance function
+                # AK it seems like for some EW direction selections, it computes the distance as 0
+                distance = vincenty(p0,p1).meters
+                print p0, p1, distance, pings[p][i-1]['RecordedAtTime'], pings[p][i]['RecordedAtTime']
+                # AK Why this distance is <=10 ? what is the reasoning behind this?
+                # AK If the distance is zero it shouldn't compute the speed
+                if distance <= 10:              
+                    t0 = pings[p][i-1]['RecordedAtTime']
+                    t1 = pings[p][i]['RecordedAtTime']
+                    if (t1-t0).seconds > 0:
+                        speedMs = (distance / (t1-t0).seconds) # in meters / seconds
+                    else:
+                        speedMs = 0
+                    speedKh = speedMs * 3.6
+                    # print pings[p], p0, p1, t0, t1
+                    print 'distance: %f, time delta: %f, speed: %f'%(distance,(t1-t0).seconds,speedKh)
+                    speeds.append(speedKh)
+
+        # Avg speed
+        if len(speeds) > 0:
+            return sum(speeds) / float(len(speeds))
+        else:
+            return 0
+
+    def getRecords(self, **data):
+        filters = []
+
+        if 'startHour' in data:
+            startHour = data['startHour']
+            if(startHour != ''):
+                filters.append({'$where' : 'return (this.hour >= '+startHour+')' })
+
+        if 'endHour' in data:
+            endHour   = data['endHour']
+            if(endHour != ''):
+                filters.append({'$where' : 'return (this.hour <= '+endHour+')' })
+
+        if 'dayOfWeek' in data:
+            dayOfWeek = data['dayOfWeek']
+            if(dayOfWeek != ''):
+                filters.append({'$where' : 'return this.dayOfWeek == '+dayOfWeek+'' })
+
+        if 'month' in data:
+            month = data['month']
+            if(month != ''):
+                filters.append({'$where' : 'return this.month == '+month+'' })
+
+        if 'year' in data:
+            year = data['year']
+            if(year != ''):
+                filters.append({'$where' : 'return this.year == '+year+'' })
+
+        if 'line' in data:
+            lines      = data['line'].split(',')
+            if(data['line'] != ''):
+                # filters.append({'PublishedLineName' : line })
+                filters.append({"PublishedLineName" : {'$in' : lines }})
+
+        if 'points[]' in data:
+            points = data['points[]']
+            print points
+
+            coordinates = []
+            for i in range(0,len(points)/2 - 1):
+
+                m1 = [float(points[2*i]),float(points[2*i+1])]
+                m2 = [float(points[2*(i+1)]),float(points[2*(i+1)+1])]
+
+                # get a rectangle from m1 and m2
+                # http://stackoverflow.com/questions/7854043/drawing-rectangle-between-two-points-with-arbitrary-width
+                width = 0.0001
+                v = [m2[0]-m1[0],m2[1]-m1[1]]
+                p = [v[1],-v[0]]
+                length = math.sqrt(p[0]*p[0] + p[1] * p[1])
+                n = [p[0] / length, p[1] / length]
+
+                r1 = [m1[0] + n[0] * width / 2.0, m1[1] + n[1] * width / 2.0]
+                r2 = [m1[0] - n[0] * width / 2.0, m1[1] - n[1] * width / 2.0]
+                r3 = [m2[0] + n[0] * width / 2.0, m2[1] + n[1] * width / 2.0]
+                r4 = [m2[0] - n[0] * width / 2.0, m2[1] - n[1] * width / 2.0]
+                # print r1
+                # print r2
+                # print r3
+                # print r4
+                coordinates.append([[r1,r2,r4,r3,r1]])
+                print coordinates
+            query = {"VehicleLocation" : {"$geoWithin": {"$geometry": {"type": "MultiPolygon", "coordinates": coordinates }}}}
+            # print query
+            filters.append(query)
+
+        # print data, filters
+        print filters
+        coll = self.collection
+        if(len(filters) > 0):
+            records = coll.find({'$and': filters})#.limit(10000)
+        else:
+            records = coll.find()#.limit(10000)
+        # print records
+        return records
+
+    @cherrypy.expose
+    def getAvgSpeed(self, **data):
+        print data
+        records = self.getRecords(**data)
+        result = list(records)
+        avgSpeed = self.computeAvgSpeed(result)
+        print avgSpeed
+        p0 = [data['points[]'][0],data['points[]'][1]]
+        p1 = [data['points[]'][2],data['points[]'][3]]
+        return str(p0[0])+','+str(p0[1])+','+str(p1[0])+','+str(p1[1])+','+str(avgSpeed)
+
+
+    @cherrypy.expose
+    def getData(self, **data):
+        records = self.getRecords(**data)
+
+        csv = ''
+        count = 0
+        # for e in records:
+        #     line = ("%s,%f,%f,%s\n")%(e['RecordedAtTime'],e['VehicleLocation'][0],e['VehicleLocation'][1],e['PublishedLineName'])
+        #     csv+=line
+        #     count+=1
+        #     print count
+        print 'Creating a list...'
+        result = list(records)
+        print 'Returning '+str(len(result))+' records'
+        cherrypy.response.headers['Content-Type']        = 'application/octet-stream'
+        cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
+        formatted = '\n'.join('%s,%f,%f,%s'%(result[n]['RecordedAtTime'],result[n]['VehicleLocation'][0],result[n]['VehicleLocation'][1],result[n]['PublishedLineName']) for n in xrange(len(result)))
+        print 'Done!'
+        yield formatted
+
+    @cherrypy.expose
+    def getAggregation(self, **data):
+        formatted = ''
+        count = len(data['points[]']) / 2
+        print count
+        print data['points[]']
+        for i in range(0,count-1):
+            formatted += '# Segment'+str(i)+'\n'
+            # print formatted
+
+            segment = data['points[]'][2*i], data['points[]'][2*i+1], data['points[]'][2*i+2], data['points[]'][2*i+3]
+            data2 = copy.deepcopy(data)
+            data2['points[]'] = segment
+            print segment
+            records = self.getRecords(**data2)
+
+            lines = {}
+            firstPing = {}
+            lastPing  = {}
+            for e in records:
+                l = e['PublishedLineName']
+                if l in lines:
+                    lines[l].append(e)
+                    if e['RecordedAtTime'] < firstPing[l]:
+                        firstPing[l] = e['RecordedAtTime']
+                    if e['RecordedAtTime'] > lastPing[l]:
+                        lastPing[l] = e['RecordedAtTime']
+
+                else:
+                    lines[l] = []
+                    lines[l].append(e)
+                    lastPing[l] = e['RecordedAtTime']
+                    firstPing[l] = e['RecordedAtTime']
+
+            # compute speed for each line segment
+            for l in lines:
+                # print lines[l]
+                # AK avgSpeed here is just drawn from a uniform distribution
+                # AK it is a random number between 0 and 20 not the actual computeAvgSpeed
+                avgSpeed = random.uniform(0,20)#self.computeAvgSpeed(lines[l])
+                print l, avgSpeed
+                formatted += '%s,%f,%s,%s\n'%(l,avgSpeed,firstPing[l],lastPing[l])
+
+        cherrypy.response.headers['Content-Type']        = 'application/octet-stream'
+        cherrypy.response.headers['Content-Disposition'] = 'attachment; filename=export.csv'
+        print 'Done!'
+        yield formatted
+
+# Uncomment below for server functionality
+PATH = os.path.abspath(os.path.dirname(__file__))
+class Root(object): pass
+cherrypy.tree.mount(StackMirror(), '/', config={
+        '/': {
+                'tools.staticdir.on': True,
+                'tools.staticdir.dir': PATH,
+                'tools.staticdir.index': 'index.html',
+            },
+    })
+
+# sudo iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
+cherrypy.config.update({'server.socket_host': '0.0.0.0'})
+cherrypy.engine.start()
+
+# Uncomment below to test
+# def main():
+#     data = {'dayOfWeek': u'', 'endHour': u'', 'segment[]': [u'40.80171', u'-73.95923', u'40.80146', u'-73.95941', u'40.80115', u'-73.95964', u'40.80115', u'-73.95964', u'40.80091', u'-73.95906', u'40.80067', u'-73.95849', u'40.80067', u'-73.95849', u'40.80064', u'-73.9585', u'40.80061', u'-73.95851', u'40.80058', u'-73.95851', u'40.80055', u'-73.9585', u'40.80052', u'-73.95849', u'40.80049', u'-73.95848', u'40.80046', u'-73.95846', u'40.80043', u'-73.95844', u'40.80041', u'-73.95841', u'40.80039', u'-73.95837', u'40.80037', u'-73.95834', u'40.80031', u'-73.95839', u'40.79999', u'-73.95863', u'40.79964', u'-73.95887', u'40.79936', u'-73.95909', u'40.7993', u'-73.95912', u'40.79872', u'-73.95955', u'40.79805', u'-73.96004', u'40.79753', u'-73.96042', u'40.79738', u'-73.96053', u'40.79674', u'-73.96099', u'40.79611', u'-73.96145', u'40.79607', u'-73.96148', u'40.79548', u'-73.96191', u'40.79486', u'-73.96237', u'40.79427', u'-73.9628', u'40.79419', u'-73.96286', u'40.79413', u'-73.96291', u'40.79302', u'-73.96371', u'40.79238', u'-73.96419', u'40.79167', u'-73.96471', u'40.7916', u'-73.96476', u'40.79099', u'-73.96521', u'40.79036', u'-73.96566', u'40.78974', u'-73.96611', u'40.78911', u'-73.96658', u'40.78848', u'-73.96703', u'40.78787', u'-73.96748', u'40.78723', u'-73.96794', u'40.7866', u'-73.9684', u'40.78597', u'-73.96886', u'40.78547', u'-73.96923', u'40.7853', u'-73.96935', u'40.78461', u'-73.96986', u'40.78398', u'-73.97033', u'40.78342', u'-73.97074', u'40.78335', u'-73.97079', u'40.7833', u'-73.97082', u'40.78272', u'-73.97126', u'40.78215', u'-73.97165', u'40.78204', u'-73.97173', u'40.78192', u'-73.97182', u'40.78105', u'-73.97244', u'40.78071', u'-73.97269', u'40.78014', u'-73.97309', u'40.77948', u'-73.97357', u'40.77881', u'-73.97407', u'40.77817', u'-73.97453', u'40.77753', u'-73.975', u'40.7769', u'-73.97546', u'40.77622', u'-73.97596', u'40.77553', u'-73.97646', u'40.77491', u'-73.97691', u'40.77434', u'-73.97733', u'40.77428', u'-73.97737', u'40.77366', u'-73.97783', u'40.7731', u'-73.97823', u'40.77303', u'-73.97828', u'40.77297', u'-73.97833', u'40.7725', u'-73.97867', u'40.77246', u'-73.9787', u'40.77242', u'-73.97873', u'40.77236', u'-73.97877', u'40.77178', u'-73.97919', u'40.77178', u'-73.97919', u'40.77172', u'-73.97899', u'40.7717', u'-73.97887', u'40.7717', u'-73.97878', u'40.7717', u'-73.9787', u'40.77172', u'-73.97853', u'40.77174', u'-73.97841', u'40.77179', u'-73.97823', u'40.7718', u'-73.97804', u'40.77179', u'-73.9778', u'40.77168', u'-73.97763', u'40.7714', u'-73.97719', u'40.77133', u'-73.97708', u'40.7699', u'-73.97476', u'40.76968', u'-73.97441', u'40.7695', u'-73.9741', u'40.76929', u'-73.97368', u'40.76909', u'-73.97313', u'40.76899', u'-73.97268', u'40.76885', u'-73.97224', u'40.76869', u'-73.97169', u'40.76849', u'-73.97123', u'40.76849', u'-73.97123', u'40.7683', u'-73.97087', u'40.76803', u'-73.97028', u'40.76803', u'-73.97028', u'40.76796', u'-73.97033', u'40.76739', u'-73.97073', u'40.76677', u'-73.97119', u'40.76614', u'-73.97165', u'40.76552', u'-73.9721', u'40.76503', u'-73.97246', u'40.7649', u'-73.97255', u'40.7649', u'-73.97255', u'40.76498', u'-73.97268', u'40.76505', u'-73.97283', u'40.76509', u'-73.97295', u'40.7651', u'-73.97303', u'40.7651', u'-73.9731', u'40.7651', u'-73.97312', u'40.7651', u'-73.97312', u'40.76528', u'-73.97307', u'40.76531', u'-73.97306', u'40.76541', u'-73.97301', u'40.76541', u'-73.97301'], 'line': u'', 'startHour': u''}
+#     # data = {}
+#     sm = StackMirror()
+#     # result = sm.getData(**data)
+#     # avgSpeed = sm.getAvgSpeed(**data)
+#     result = sm.getAggregation(**data)
+
+# if __name__ == "__main__":
+#     main()
+
+

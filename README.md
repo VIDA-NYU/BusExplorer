@@ -1,5 +1,11 @@
-# DOTTimeTool
+# BusExplorer
 DOT Time Tool
+
+## Steps:
+0) Download a sample of the bus pings at: https://www.dropbox.com/s/oqaqcjynjmxdn24/sample2M.csv.zip?dl=0
+1) Initialize MongoDB with a sample of bus pings by running export_csv_to_mongo.py ./sample2M.csv -e
+2) Initialize the webserver by running server.py
+
 
 ## Useful commands:
 python export_csv_to_mongo.py ./sample.csv -e
