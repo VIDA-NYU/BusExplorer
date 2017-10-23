@@ -1,32 +1,68 @@
-# BusExplorer
-DOT Time Tool
+# Bus Time Tool 
 
-## Steps:
-0) Download a sample of the bus pings at: https://www.dropbox.com/s/oqaqcjynjmxdn24/sample2M.csv.zip?dl=0
+This web-based tool makes it easy for the end users to access stored data and to query it without any delay or external help. Moreover, the tool allows the users to conduct a series of data visualization and analysis operations demonstrating the potential of a such web-based tool for future applications.
 
-1) Initialize MongoDB with a sample of bus pings by running export_csv_to_mongo.py ./sample2M.csv -e
+The tool was first presented in the [paper](https://vgc.poly.edu/~fmiranda/bus/mt-its-2017-bus.pdf):
 
-2) Initialize the webserver by running server.py
+**Urban Pulse: Capturing the Rhythm of Cities**   
+Abdullah Kurkcu, Fabio Miranda, Kaan Ozbay and Cláudio T. Silva  
+*2017 5th IEEE International Conference on Models and Technologies for Intelligent Transportation Systems (MT-ITS)*
 
 
-## Useful commands:
-python export_csv_to_mongo.py ./sample.csv -e
+## Table of contents
 
-DB name: mta
+   * [Installing prerequisites](#installing-prerequisites)
+      * [Linux (Ubuntu, Linux Mint)](#linux-ubuntu-linux-mint)
+      * [macOS](#macos)
+   * [Running](#running)
+      * [Web client](#web-client)
 
-use mta
+## Installing prerequisites
 
-Collection name: bus
+The following are prerequisites for all systems:
 
-db.createCollection("bus")
+1. MongoDB
+3. Python 2.7
 
-db.bus.createIndex({"VehicleLocation": "2dsphere"})
+### Linux (Ubuntu, Linux Mint)
+1. Make sure you have pytho 2.7:
 
-db.bus.find({"VehicleLocation" : {$within:{$polygon:[[0,0],[1,1],[1,1],[0,0]]}}}).limit(2)
+	```
+	sudo apt-get install python2.7
+	```
 
-db.bus.find({$where : 'return this.hour == 4' }).limit(1)
+2. Install MongoDB following the steps at [mongodb.com](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
 
-db.bus.find({$where : 'return this.dayOfWeek == 4' }).limit(1)
+### macOS
+1. Make sure you have Python 2.7:
 
-db.bus.find({$and: [{$where : 'return this.dayOfWeek == 5' },{$where : 'return this.hour == 15'}]}).limit(1)
+	```
+	brew install python
+	```
 
+2. Install MongoDB following the steps at [mongodb.com](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)
+
+## Running:
+1. Download a sample of the bus pings [here](https://raw.githubusercontent.com/ViDA-NYU/urban-pulse/master/sample2M.csv.zip) and unzip the file.
+
+2. Initialize MongoDB with a sample of bus pings by running:
+
+	```
+	python export_csv_to_mongo.py ./sample2M.csv -e
+	```
+
+This will create a new database and also populate it with the samples provided in the csv file.
+
+For detailed information of how to use export_csv_to_mongo.py, type:
+	```
+	python export_csv_to_mongo.py --help
+	```
+
+3. Initialize the webserver:
+	```
+	python server.py
+	```
+
+4. A new browser window will open with the tool:
+
+![Interface](https://raw.githubusercontent.com/ViDA-NYU/urban-pulse/master/tool.png)
