@@ -51,9 +51,9 @@ The following are prerequisites for all systems:
 	python export_csv_to_mongo.py ./sample2M.csv -e
 	```
 
-This will create a new database and also populate it with the samples provided in the csv file.
+   This will create a new database and also populate it with the samples provided in the csv file.
 
-For detailed information of how to use export_csv_to_mongo.py, type:
+   For detailed information of how to use export_csv_to_mongo.py, type:
 
 	```
 	python export_csv_to_mongo.py --help
@@ -67,4 +67,6 @@ For detailed information of how to use export_csv_to_mongo.py, type:
 
 4. A new browser window will open with the tool:
 
-![Interface](https://raw.githubusercontent.com/ViDA-NYU/BusExplorer/master/interface.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ViDA-NYU/BusExplorer/master/interface.png" alt="Bus Time Tool interface"/>
+</p>
