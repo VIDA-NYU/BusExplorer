@@ -1,6 +1,6 @@
 # Bus Time Tool 
 
-This web-based tool makes it easy for the end users to access stored data and to query it without any delay or external help. Moreover, the tool allows the users to conduct a series of data visualization and analysis operations demonstrating the potential of a such web-based tool for future applications.
+This web-based tool makes it easy for the end users to access [bus trajectory data](http://bustime.mta.info/wiki/Developers/Index) and to query it without any delay or external help. Moreover, the tool allows the users to conduct a series of data visualization and analysis operations demonstrating the potential of a such web-based tool for future applications.
 
 The tool was first presented in the [paper](https://vgc.poly.edu/~fmiranda/bus/mt-its-2017-bus.pdf):
 
