@@ -43,7 +43,7 @@ The following are prerequisites for all systems:
 2. Install MongoDB following the steps at [mongodb.com](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)
 
 ## Running:
-1. Download a sample of the bus pings [here](https://raw.githubusercontent.com/ViDA-NYU/BusExplorer/master/sample2M.csv.zip) and unzip the file.
+1. Unzip the file ```sample2M.csv.zip``` (inside data folder).
 
 2. Initialize MongoDB with a sample of bus pings by running:
 
