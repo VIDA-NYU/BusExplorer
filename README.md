@@ -25,7 +25,7 @@ The following are prerequisites for all systems:
 3. Python 2.7
 
 ### Linux (Ubuntu, Linux Mint)
-1. Make sure you have pytho 2.7:
+1. Make sure you have Python 2.7:
 
 	```
 	sudo apt-get install python2.7
